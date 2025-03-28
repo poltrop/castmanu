@@ -22,7 +22,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./  # Carpeta local (desde el root del repo)
           server-dir: /public/  # Cambia esto si tu estructura es diferente
-          exclude-glob: |
+          exclude: |
             .git/**
             .github/**
             README.md
