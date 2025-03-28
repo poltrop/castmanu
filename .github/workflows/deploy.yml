@@ -1,0 +1,27 @@
+name: 🚀 Desplegar en DonDominio por FTP
+
+on:
+  push:
+    branches:
+      - main  # O la rama que usas
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar el repositorio
+        uses: actions/checkout@v3
+
+      - name: Subir archivos al servidor por FTP
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./  # Carpeta local (desde el root del repo)
+          server-dir: /public/  # Cambia esto si tu estructura es diferente
+          exclude: |
+            **/.git*
+            **/.github*
+            **/README.md
