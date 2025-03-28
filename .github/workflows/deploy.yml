@@ -25,3 +25,4 @@ jobs:
             **/.git*
             **/.github*
             **/README.md
+          delete: fasle
