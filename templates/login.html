@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - ManuCast</title>
+    <!-- Favicons -->
+    <link rel="icon" href="../assets/img/favicon/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="../assets/img/favicon/favicon-16x16.png" sizes="16x16" type="image/png">
+    <link rel="icon" href="../assets/img/favicon/favicon-32x32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="../assets/img/favicon/apple-touch-icon.png">
+    <link rel="icon" href="../assets/img/favicon/android-chrome-192x192.png" sizes="192x192" type="image/png">
+    <link rel="icon" href="../assets/img/favicon/android-chrome-512x512.png" sizes="512x512" type="image/png">
+    <!-- Scripts y estilos -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <script src="../assets/js/main/mainLogin.js" type="module"></script>
+</head>
+<body class="min-h-screen flex items-center justify-center bg-no-repeat bg-cover bg-center bg-[url('../assets/img/background-2.jpg')] lg:bg-[url('../assets/img/background.jpg')]">
+
+    <div class="bg-steel-blue/80 rounded-xl shadow-2xl p-8 max-w-md w-full">
+        <h2 class="text-neon-cyan text-3xl font-bold mb-6 text-center">Bienvenido a ManuCast</h2>
+        
+        <form id="loginForm" class="space-y-4">
+            <div>
+                <label for="username" class="block text-gray-blue text-sm font-semibold">Usuario</label>
+                <input type="text" id="username" class="w-full p-2 rounded-md bg-deep-black text-gray-blue focus:outline-none focus:ring-2 focus:ring-neon-cyan" placeholder="Nombre de usuario" required>
+            </div>
+            <div>
+                <label for="password" class="block text-gray-blue text-sm font-semibold">Contraseña</label>
+                <input type="password" id="password" class="w-full p-2 rounded-md bg-deep-black text-gray-blue focus:outline-none focus:ring-2 focus:ring-neon-cyan" placeholder="Contraseña" required>
+            </div>
+            <p id="messageContainer"></p>
+            <button type="submit" class="w-full bg-neon-cyan hover:bg-opacity-80 text-midnight-blue font-bold py-2 px-4 rounded-md transition ease-in-out duration-200">Iniciar Sesión</button>
+        </form>
+
+        <p class="text-gray-blue text-center mt-4">
+            ¿No tienes cuenta? <a href="./registro.html" class="text-neon-cyan hover:underline">Regístrate aquí</a>
+        </p>
+    </div>
+</body>
+</html>
