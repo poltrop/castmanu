@@ -80,7 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (response.success) {
                 showSuccess("¡Registro exitoso! Redirigiendo al login...");
                 setTimeout(() => {
-                    window.location.href = "../login.html";
+                    window.location.href = "login.html";
                 }, 500);
             } else {
                 showError(usernameError, `Error al registrar: ${response.message || "Desconocido"}`);
