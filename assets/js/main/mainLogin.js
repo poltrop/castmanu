@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 showMessage("¡Inicio de sesión exitoso!", "success");
                 setTimeout(() => {
                     window.location.href = "home.html";
-                }, 500);
+                }, 1000);
             } else {
                 showMessage("Usuario o contraseña incorrectos.", "error");
             }

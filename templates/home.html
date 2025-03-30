@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - ManuCast</title>
+    <!-- Favicons -->
+    <link rel="icon" href="../assets/img/favicon/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="../assets/img/favicon/favicon-16x16.png" sizes="16x16" type="image/png">
+    <link rel="icon" href="../assets/img/favicon/favicon-32x32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="../assets/img/favicon/apple-touch-icon.png">
+    <link rel="icon" href="../assets/img/favicon/android-chrome-192x192.png" sizes="192x192" type="image/png">
+    <link rel="icon" href="../assets/img/favicon/android-chrome-512x512.png" sizes="512x512" type="image/png">
+    <!-- Scripts y estilos -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <script src="../assets/js/main/mainHome.js" type="module"></script>
+</head>
+<body class="bg-midnight-blue text-gray-blue min-h-screen">
+    
+    <!-- Header -->
+    <header class="bg-steel-blue sticky top-0 w-full p-4 shadow-lg flex items-center justify-between">
+        <div class="text-neon-cyan text-xl font-bold sm:text-2xl me-2">ManuCast</div>
+        
+        <!-- Barra de búsqueda -->
+        <div class="flex gap-4 w-1/2">
+            <input id="searchInput" type="text" placeholder="Buscar..." class="w-full p-2 rounded-md bg-deep-black text-gray-blue focus:ring-2 focus:ring-neon-cyan">
+        </div>
+        
+        <!-- Contenedor para el botón de filtros y el menú de filtros -->
+        <div class="relative flex items-center">
+            <!-- Botón de filtros en pantallas pequeñas -->
+            <button id="filterToggle" class="lg:hidden bg-gray-blue/50 px-4 py-2 rounded-md text-midnight-blue font-bold mx-2">🔍</button>
+
+            <!-- Menú de filtros (oculto en pantallas pequeñas) -->
+            <div id="filterMenu" class="hidden absolute mx-2 top-12 right-0 bg-steel-blue p-4 rounded-md shadow-lg lg:relative lg:top-auto lg:right-auto lg:bg-transparent lg:p-0 lg:shadow-none lg:flex lg:gap-2">
+                <select id="typeFilter" class="mb-2 p-2 lg:mb-0 bg-deep-black text-center text-gray-blue rounded-md focus:ring-2 focus:ring-neon-cyan w-28">
+                    <option value="all">Todos</option>
+                    <option value="movies">Películas</option>
+                    <option value="series">Series</option>
+                    <option value="otros">Otros</option>
+                </select>
+                <div class="relative">
+                    <button id="genreButton" class="w-28 p-2 bg-deep-black text-gray-blue rounded-md focus:ring-2 focus:ring-neon-cyan">Géneros</button>
+                    <div id="genreDropdown" class="absolute mt-2 bg-deep-black text-gray-blue rounded-md shadow-md p-2 hidden w-28 flex flex-col">
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="accion" class="genre-checkbox hidden"> <span>Acción</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="aventura" class="genre-checkbox hidden"> <span>Aventura</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="comedia" class="genre-checkbox hidden"> <span>Comedia</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="drama" class="genre-checkbox hidden"> <span>Drama</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="terror" class="genre-checkbox hidden"> <span>Terror</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="thriller" class="genre-checkbox hidden"> <span>Thriller</span></label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+        <!-- Menú Hamburguesa -->
+        <button id="menuToggle" class="lg:hidden bg-gray-blue/50 px-4 py-2 rounded-md text-midnight-blue font-bold">☰</button>
+        
+        <!-- Menú de navegación -->
+        <nav id="menu" class="hidden absolute top-16 right-4 bg-steel-blue p-4 rounded-md shadow-lg flex flex-col gap-2 lg:flex lg:relative lg:top-auto lg:right-auto lg:bg-transparent lg:p-0 lg:shadow-none lg:flex-row lg:gap-2">
+            <button class="w-24 bg-neon-cyan px-4 py-2 rounded-md text-midnight-blue font-bold">Añadir</button>
+            <button class="w-24 bg-gray-blue/50 px-4 py-2 rounded-md text-midnight-blue font-bold">Eliminar</button>
+            <button class="w-24 bg-gray-blue/50 px-4 py-2 rounded-md text-midnight-blue font-bold">Editar</button>
+            <div class="relative">
+                <button id="profileButton" class="w-24 bg-gray-blue/50 px-4 py-2 rounded-md text-midnight-blue font-bold">Perfil</button>
+                <div id="profileMenu" class="absolute right-0 mt-2 w-48 bg-steel-blue text-gray-blue rounded-xl shadow-lg hidden flex flex-col z-50 divide-y divide-gray-blue/30">
+                    <a href="#" class="block px-4 py-3 font-semibold hover:bg-neon-cyan hover:text-midnight-blue transition rounded-t-xl">Cambiar Contraseña</a>
+                    <a href="#" class="block px-4 py-3 font-semibold hover:bg-neon-cyan hover:text-midnight-blue transition rounded-b-xl">Cerrar Sesión</a>
+                </div>                
+            </div>
+        </nav>
+    </header>
+    
+    <!-- Contenido principal -->
+    <main class="p-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Tarjeta de película -->
+            <div class="movie-card bg-steel-blue p-4 rounded-lg shadow-lg flex flex-col items-center">
+                <img src="../assets/img/poster.jpg" alt="Portada" class="w-full rounded-md shadow-md">
+                <h3 class="text-neon-cyan text-lg font-bold mt-2 text-center">Título de Película 1</h3>
+                <p class="movie-type text-sm text-gray-blue text-center bg-neon-cyan/20 px-2 py-1 rounded-md">📺 Serie</p>
+                <div class="flex flex-wrap gap-2 mt-2">
+                    <span class="movie-genre bg-neon-cyan text-midnight-blue px-3 py-1 rounded-full text-xs font-bold" data-genero="accion">Acción</span>
+                    <span class="movie-genre bg-neon-cyan text-midnight-blue px-3 py-1 rounded-full text-xs font-bold" data-genero="aventura">Aventura</span>
+                </div>
+            </div>
+            <!-- Tarjeta de película -->
+            <div class="movie-card bg-steel-blue p-4 rounded-lg shadow-lg flex flex-col items-center">
+                <img src="../assets/img/poster.jpg" alt="Portada" class="w-full rounded-md shadow-md">
+                <h3 class="text-neon-cyan text-lg font-bold mt-2 text-center">Título de Película 2</h3>
+                <p class="movie-type text-sm text-gray-blue text-center bg-neon-cyan/20 px-2 py-1 rounded-md">📺 Serie</p>
+                <div class="flex flex-wrap gap-2 mt-2">
+                    <span class="movie-genre bg-neon-cyan text-midnight-blue px-3 py-1 rounded-full text-xs font-bold" data-genero="accion">Acción</span>
+                    <span class="movie-genre bg-neon-cyan text-midnight-blue px-3 py-1 rounded-full text-xs font-bold" data-genero="aventura">Aventura</span>
+                </div>
+            </div>
+            <!-- Tarjeta de película -->
+            <div class="movie-card bg-steel-blue p-4 rounded-lg shadow-lg flex flex-col items-center">
+                <img src="../assets/img/poster.jpg" alt="Portada" class="w-full rounded-md shadow-md">
+                <h3 class="text-neon-cyan text-lg font-bold mt-2 text-center">Título de Película 3</h3>
+                <p class="movie-type text-sm text-gray-blue text-center bg-neon-cyan/20 px-2 py-1 rounded-md">📺 Serie</p>
+                <div class="flex flex-wrap gap-2 mt-2">
+                    <span class="movie-genre bg-neon-cyan text-midnight-blue px-3 py-1 rounded-full text-xs font-bold" data-genero="accion">Acción</span>
+                    <span class="movie-genre bg-neon-cyan text-midnight-blue px-3 py-1 rounded-full text-xs font-bold" data-genero="aventura">Aventura</span>
+                </div>
+            </div>
+            <!-- Tarjeta de película -->
+            <div class="movie-card bg-steel-blue p-4 rounded-lg shadow-lg flex flex-col items-center">
+                <img src="../assets/img/poster.jpg" alt="Portada" class="w-full rounded-md shadow-md">
+                <h3 class="text-neon-cyan text-lg font-bold mt-2 text-center">Título de Película 4</h3>
+                <p class="movie-type text-sm text-gray-blue text-center bg-neon-cyan/20 px-2 py-1 rounded-md">📺 Serie</p>
+                <div class="flex flex-wrap gap-2 mt-2">
+                    <span class="movie-genre bg-neon-cyan text-midnight-blue px-3 py-1 rounded-full text-xs font-bold" data-genero="accion">Acción</span>
+                    <span class="movie-genre bg-neon-cyan text-midnight-blue px-3 py-1 rounded-full text-xs font-bold" data-genero="aventura">Aventura</span>
+                </div>
+            </div>
+            <!-- Tarjeta de película -->
+            <div class="movie-card bg-steel-blue p-4 rounded-lg shadow-lg flex flex-col items-center">
+                <img src="../assets/img/poster.jpg" alt="Portada" class="w-full rounded-md shadow-md">
+                <h3 class="text-neon-cyan text-lg font-bold mt-2 text-center">Título de Película 5</h3>
+                <p class="movie-type text-sm text-gray-blue text-center bg-neon-cyan/20 px-2 py-1 rounded-md">📺 Serie</p>
+                <div class="flex flex-wrap gap-2 mt-2">
+                    <span class="movie-genre bg-neon-cyan text-midnight-blue px-3 py-1 rounded-full text-xs font-bold" data-genero="accion">Acción</span>
+                    <span class="movie-genre bg-neon-cyan text-midnight-blue px-3 py-1 rounded-full text-xs font-bold" data-genero="aventura">Aventura</span>
+                </div>
+            </div>
+            <!-- Tarjeta de película -->
+            <div class="movie-card bg-steel-blue p-4 rounded-lg shadow-lg flex flex-col items-center">
+                <img src="../assets/img/poster.jpg" alt="Portada" class="w-full rounded-md shadow-md">
+                <h3 class="text-neon-cyan text-lg font-bold mt-2 text-center">Título de Película 6</h3>
+                <p class="movie-type text-sm text-gray-blue text-center bg-neon-cyan/20 px-2 py-1 rounded-md">📺 Serie</p>
+                <div class="flex flex-wrap gap-2 mt-2">
+                    <span class="movie-genre bg-neon-cyan text-midnight-blue px-3 py-1 rounded-full text-xs font-bold" data-genero="accion">Acción</span>
+                    <span class="movie-genre bg-neon-cyan text-midnight-blue px-3 py-1 rounded-full text-xs font-bold" data-genero="aventura">Aventura</span>
+                </div>
+            </div>
+            <!-- Tarjeta de película -->
+            <div class="movie-card bg-steel-blue p-4 rounded-lg shadow-lg flex flex-col items-center">
+                <img src="../assets/img/poster.jpg" alt="Portada" class="w-full rounded-md shadow-md">
+                <h3 class="text-neon-cyan text-lg font-bold mt-2 text-center">Título de Película 7</h3>
+                <p class="movie-type text-sm text-gray-blue text-center bg-neon-cyan/20 px-2 py-1 rounded-md">📺 Serie</p>
+                <div class="flex flex-wrap gap-2 mt-2">
+                    <span class="movie-genre bg-neon-cyan text-midnight-blue px-3 py-1 rounded-full text-xs font-bold" data-genero="accion">Acción</span>
+                    <span class="movie-genre bg-neon-cyan text-midnight-blue px-3 py-1 rounded-full text-xs font-bold" data-genero="aventura">Aventura</span>
+                </div>
+            </div>
+            
+        </div>
+    </main>
+</body>
+</html>
