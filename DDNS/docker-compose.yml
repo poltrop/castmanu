@@ -1,0 +1,20 @@
+services:
+  app:
+    build: .
+    container_name: nginx_vigilante
+    restart: unless-stopped
+    volumes:
+      - D:\WD\Videos:/media/videos  # Carpeta local vinculada al contenedor
+      - D:\WD\Certs\letsencrypt:/etc/letsencrypt
+      - D:\WD\Fotos:/media/fotos
+    ports:
+      - "80:80"  # Nginx escuchará en el puerto 8080 del host
+      - "443:443"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['0']
+              capabilities: [gpu,video]  # Permitir acceso a la GPU
+    runtime: nvidia
