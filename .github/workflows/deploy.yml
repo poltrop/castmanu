@@ -28,4 +28,7 @@ jobs:
           exclude: |
             .git/**
             .github/**
+            app/**
+            DDNS/**
+            env/**
             README.md
