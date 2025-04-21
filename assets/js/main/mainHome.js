@@ -1,21 +1,21 @@
-import { login } from "../login.js";
 import { tailwindConfig } from "../config.js";
+import { getAll } from "../getAll.js";
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     tailwind.config = tailwindConfig; // Cargamos la configuración de Tailwind
-    const genreButton = document.getElementById("genreButton");
-    const genreDropdown = document.getElementById("genreDropdown");
-    const genreOptions = document.querySelectorAll(".genre-option");
-    const menuToggle = document.getElementById("menuToggle");
-    const menu = document.getElementById("menu");
-    const filterToggle = document.getElementById("filterToggle");
-    const filterMenu = document.getElementById("filterMenu");
-    const profileButton = document.getElementById("profileButton");
-    const profileMenu = document.getElementById("profileMenu");
+    let genreButton = document.getElementById("genreButton");
+    let genreDropdown = document.getElementById("genreDropdown");
+    let genreOptions = document.querySelectorAll(".genre-option");
+    let menuToggle = document.getElementById("menuToggle");
+    let menu = document.getElementById("menu");
+    let filterToggle = document.getElementById("filterToggle");
+    let filterMenu = document.getElementById("filterMenu");
+    let profileButton = document.getElementById("profileButton");
+    let profileMenu = document.getElementById("profileMenu");
     // Parte de filtros DESPUES DE CARGAR TODO
-    const searchInput = document.getElementById("searchInput");
-    const typeFilter = document.getElementById("typeFilter");
-    const movies = document.querySelectorAll(".movie-card");
+    let searchInput = document.getElementById("searchInput");
+    let typeFilter = document.getElementById("typeFilter");
+    let movies = document.querySelectorAll(".movie-card");
 
     toggleMenu(menuToggle, menu);
     toggleMenu(filterToggle, filterMenu);
@@ -23,9 +23,10 @@ document.addEventListener("DOMContentLoaded", () => {
     toggleMenu(profileButton, profileMenu);
     searchInput.addEventListener("input", applyFilters);
     typeFilter.addEventListener("change", applyFilters);
+    typeFilter.addEventListener("change", changeGenreList);
     genreOptions.forEach(option => {
         option.addEventListener("click", () => {
-            const checkbox = option.querySelector(".genre-checkbox");
+            let checkbox = option.querySelector(".genre-checkbox");
             checkbox.checked = !checkbox.checked;
             if (checkbox.checked) {
                 option.classList.add("bg-neon-cyan", "text-midnight-blue", "rounded-full", "font-bold");
@@ -34,6 +35,10 @@ document.addEventListener("DOMContentLoaded", () => {
             } // Cambia el color al seleccionar
         });
     });
+
+
+    // Ejecucion de funciones que rellenan cosas
+    //getAll();
 
     function toggleMenu(button, menu, applyFiltersOnClose = false) {
         button.addEventListener("click", (event) => {
@@ -60,26 +65,44 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function applyFilters() {
-        console.log("filtrando");
-        const searchText = searchInput.value.toLowerCase();
-        console.log(searchText);
-        const selectedType = typeFilter.value;
-        const selectedGenres = Array.from(document.querySelectorAll(".genre-checkbox:checked"))
+        //console.log("filtrando");
+        let searchText = searchInput.value.toLowerCase();
+        //console.log(searchText);
+        let selectedType = typeFilter.value.toLowerCase();
+        let selectedGenres = Array.from(document.querySelectorAll(".genre-checkbox:checked"))
             .map(checkbox => checkbox.value);
 
         movies.forEach(movie => {
-            const title = movie.querySelector("h3").textContent.toLowerCase();
-            console.log(title);
-            const type = movie.querySelector(".movie-type").textContent.trim();
-            const movieGenres = Array.from(movie.querySelectorAll(".movie-genre"))
+            let title = movie.querySelector("h3").textContent.toLowerCase();
+            //console.log(title);
+            let type = movie.querySelector(".movie-type").textContent.trim().toLowerCase();
+            let movieGenres = Array.from(movie.querySelectorAll(".movie-genre"))
                 .map(genre => genre.dataset.genero.toLowerCase()); // Usamos dataset
-            console.log(movieGenres)
-            console.log(selectedGenres)
-            const matchesSearch = !searchText || title.includes(searchText);
-            const matchesType = selectedType === "all" || type.includes(selectedType);
-            const matchesGenres = !selectedGenres.length || selectedGenres.every(genre => movieGenres.includes(genre));
+            //console.log(movieGenres)
+            //console.log(selectedGenres)
+            let matchesSearch = !searchText || title.includes(searchText);
+            let matchesType = selectedType === "todo" || type.includes(selectedType);
+            let matchesGenres = !selectedGenres.length || selectedGenres.every(genre => movieGenres.includes(genre));
 
             movie.classList.toggle("hidden", !(matchesSearch && matchesType && matchesGenres));
         });
+    }
+
+    function changeGenreList(){
+        let selected = typeFilter.value;
+        
+        let allLabels = document.querySelectorAll('#genreDropdown label');
+        let movieGenres = document.querySelectorAll('#genreDropdown .movie-genre');
+        let serieGenres = document.querySelectorAll('#genreDropdown .serie-genre');
+        
+        // Mostrar todos
+        allLabels.forEach(label => label.classList.remove('hidden'));
+
+        // Ocultar según el tipo seleccionado
+        if (selected === "pelicula") {
+            serieGenres.forEach(label => label.classList.add('hidden'));
+        } else if (selected === "serie") {
+            movieGenres.forEach(label => label.classList.add('hidden'));
+        }
     }
 });
