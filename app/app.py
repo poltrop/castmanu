@@ -1,3 +1,5 @@
+from enum import Enum
+from typing import Optional
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from fastapi_jwt_auth import AuthJWT
@@ -45,6 +47,18 @@ class User(BaseModel):
 class RegisterRequest(User):
     email: str
 
+
+class FilmType(str, Enum):
+    serie = "Serie"
+    pelicula = "Pelicula"
+    otro = "Otro"
+
+class Film(BaseModel):
+    title: str
+    type: FilmType
+    sinopsis: Optional[str] = None
+    poster_format: Optional[str] = None
+
 # Cierra la pool de conexiones
 @app.on_event("shutdown")
 async def shutdown():
@@ -91,10 +105,68 @@ async def logout(Authorize: AuthJWT = Depends()):
     return response
 
 @app.post("/register")
-async def register_user(request: RegisterRequest):
+async def register(request: RegisterRequest):
     result = await db.register(request.username, request.email, request.password)
     
     if "detail" in result:
         raise HTTPException(status_code=400, detail=result["detail"])
     
     return result
+
+@app.get("/get-all")
+async def get_all(Authorize: AuthJWT = Depends()):
+    try:
+        # Verifica que el JWT es válido
+        Authorize.jwt_required()
+        
+        resultados = await db.get_all()
+
+        return resultados
+
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="No autorizado")
+    
+@app.get("/get-film/{id}")
+async def get_film(id: str, Authorize: AuthJWT = Depends()):
+    try:
+        # Verifica que el JWT es válido
+        Authorize.jwt_required()
+        
+        resultados = await db.get_film(id)
+
+        return resultados
+
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="No autorizado")
+    
+@app.post("/add-film")
+async def add_film(film: Film, Authorize: AuthJWT = Depends()):
+    try:
+        # Verifica que el JWT es válido
+        Authorize.jwt_required()
+        claims = Authorize.get_raw_jwt()
+        uploader = claims.get("id")
+        resultados = await db.add_film(film.title, film.type, film.sinopsis, film.poster_format, uploader)
+
+        return resultados
+
+    except HTTPException as e:  # Captura cualquier HTTPException lanzada por admin
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="No autorizado")
+    
+@app.delete("/delete-film/{id}")
+async def delete_film(id: str, Authorize: AuthJWT = Depends()):
+    try:
+        # Verifica que el JWT es válido
+        Authorize.jwt_required()
+        claims = Authorize.get_raw_jwt()
+        deleter = claims.get("id")
+        resultados = await db.delete_film(id, deleter)
+
+        return resultados
+
+    except HTTPException as e:  # Captura cualquier HTTPException lanzada por admin
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="No autorizado")
