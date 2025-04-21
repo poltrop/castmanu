@@ -25,7 +25,7 @@ def upload():
     if not is_video(file):
         return "El archivo no es un video válido", 400
     new_name = request.args.get("new_name", None)
-    if new_name:
+    if new_name and new_name.strip():
         filename = new_name + os.path.splitext(file.filename)[1]
     else:
         filename = file.filename
@@ -55,8 +55,8 @@ def rename(filename):
     os.rename(old_path, new_path)
     return "File renamed", 200
 
-@app.route("/uploadf", methods=["POST"])
-def uploadf():
+@app.route("/uploadf/<new_name>", methods=["POST"])
+def uploadf(new_name):
     check_auth()
     if 'file' not in request.files:
         return "No file provided", 400
@@ -64,7 +64,8 @@ def uploadf():
     # Verifica si el archivo es una imagen antes de guardarlo
     if not is_image(file):
         return "El archivo no es una imagen válida", 400
-    path = os.path.join(FOTOS_FOLDER, file.filename)
+    filename = new_name + os.path.splitext(file.filename)[1]
+    path = os.path.join(FOTOS_FOLDER, filename)
     file.save(path)
     return "File uploaded", 200
 
