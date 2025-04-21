@@ -9,12 +9,12 @@ CREATE TABLE IF NOT EXISTS users (
 );
 CREATE TABLE IF NOT EXISTS films (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(255) UNIQUE NOT NULL,
-    type ENUM('serie', 'pelicula', 'otro') DEFAULT 'otro' NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    type ENUM('serie', 'pelicula', 'otro') NOT NULL,
     sinopsis TEXT,
     poster VARCHAR(255),
     file VARCHAR(255) UNIQUE NOT NULL,
-    uploader INT NOT NULL,
+    uploader INT,
     FOREIGN KEY (uploader) REFERENCES users(id)
 );
 CREATE TABLE IF NOT EXISTS genres (
