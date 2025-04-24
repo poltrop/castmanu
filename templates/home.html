@@ -19,8 +19,8 @@
 <body class="bg-midnight-blue text-gray-blue min-h-screen">
     
     <!-- Header -->
-    <header class="bg-steel-blue sticky top-0 w-full p-4 shadow-lg flex items-center justify-between">
-        <div class="text-neon-cyan text-xl font-bold sm:text-2xl me-2">ManuCast</div>
+    <header class="bg-steel-blue sticky top-0 w-full p-4 shadow-lg flex items-center justify-between z-10">
+        <a href="home.html" class="text-neon-cyan text-xl font-bold sm:text-2xl me-2">ManuCast</a>
         
         <!-- Barra de búsqueda -->
         <div class="flex gap-4 w-1/2">
@@ -43,33 +43,33 @@
                 <div class="relative">
                     <button id="genreButton" class="w-28 p-2 bg-deep-black text-gray-blue rounded-md focus:ring-2 focus:ring-neon-cyan">Géneros</button>
                     <div id="genreDropdown" class="absolute mt-2 bg-deep-black text-gray-blue rounded-md shadow-md p-4 w-48 h-96 hidden gap-2 overflow-y-auto hidden">
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="accion" class="genre-checkbox hidden"> <span>🎬 Acción</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="accion-aventura" class="genre-checkbox hidden"> <span>📺 Action & Adventure</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="animacion" class="genre-checkbox hidden"> <span>🎬📺 Animación</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="aventura" class="genre-checkbox hidden"> <span>🎬 Aventura</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="belica" class="genre-checkbox hidden"> <span>🎬 Bélica</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="ciencia-ficcion" class="genre-checkbox hidden"> <span>🎬 Ciencia ficción</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="comedia" class="genre-checkbox hidden"> <span>🎬📺 Comedia</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="crimen" class="genre-checkbox hidden"> <span>🎬📺 Crimen</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="documental" class="genre-checkbox hidden"> <span>🎬📺 Documental</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="drama" class="genre-checkbox hidden"> <span>🎬📺 Drama</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="familia" class="genre-checkbox hidden"> <span>🎬📺 Familia</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="fantasia" class="genre-checkbox hidden"> <span>🎬 Fantasía</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="historia" class="genre-checkbox hidden"> <span>🎬 Historia</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="infantil" class="genre-checkbox hidden"> <span>📺 Kids</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="misterio" class="genre-checkbox hidden"> <span>🎬📺 Misterio</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="musica" class="genre-checkbox hidden"> <span>🎬 Música</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="noticias" class="genre-checkbox hidden"> <span>📺 News</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="pelicula-de-tv" class="genre-checkbox hidden"> <span>🎬 Película de TV</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="realidad" class="genre-checkbox hidden"> <span>📺 Reality</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="romance" class="genre-checkbox hidden"> <span>🎬 Romance</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="ciencia-ficcion-fantasia" class="genre-checkbox hidden"> <span>📺 Sci-Fi & Fantasy</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="soap" class="genre-checkbox hidden"> <span>📺 Soap</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="suspense" class="genre-checkbox hidden"> <span>🎬 Suspense</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="talk" class="genre-checkbox hidden"> <span>📺 Talk</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="terror" class="genre-checkbox hidden"> <span>🎬 Terror</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="guerra-politica" class="genre-checkbox hidden"> <span>📺 War & Politics</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="western" class="genre-checkbox hidden"> <span>🎬📺 Western</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Acción" class="genre-checkbox hidden"> <span>🎬 Acción</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="Acción y Aventura" class="genre-checkbox hidden"> <span>📺 Acción y Aventura</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="Animación" class="genre-checkbox hidden"> <span>🎬📺 Animación</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Aventura" class="genre-checkbox hidden"> <span>🎬 Aventura</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Bélica" class="genre-checkbox hidden"> <span>🎬 Bélica</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Ciencia ficción" class="genre-checkbox hidden"> <span>🎬 Ciencia ficción</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="Ciencia ficción y Fantasía" class="genre-checkbox hidden"> <span>📺 Ciencia ficción y Fantasía</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="Comedia" class="genre-checkbox hidden"> <span>🎬📺 Comedia</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="Crimen" class="genre-checkbox hidden"> <span>🎬📺 Crimen</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="Documental" class="genre-checkbox hidden"> <span>🎬📺 Documental</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="Drama" class="genre-checkbox hidden"> <span>🎬📺 Drama</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="Familia" class="genre-checkbox hidden"> <span>🎬📺 Familia</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Fantasía" class="genre-checkbox hidden"> <span>🎬 Fantasía</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="Guerra y Política" class="genre-checkbox hidden"> <span>📺 Guerra y Política</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Historia" class="genre-checkbox hidden"> <span>🎬 Historia</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="Misterio" class="genre-checkbox hidden"> <span>🎬📺 Misterio</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Música" class="genre-checkbox hidden"> <span>🎬 Música</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="Niños" class="genre-checkbox hidden"> <span>📺 Niños</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="Noticias" class="genre-checkbox hidden"> <span>📺 Noticias</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Película de TV" class="genre-checkbox hidden"> <span>🎬 Película de TV</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="Reality" class="genre-checkbox hidden"> <span>📺 Reality</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Romance" class="genre-checkbox hidden"> <span>🎬 Romance</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="Soap" class="genre-checkbox hidden"> <span>📺 Soap</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Suspense" class="genre-checkbox hidden"> <span>🎬 Suspense</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="Talk Show" class="genre-checkbox hidden"> <span>📺 Talk Show</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Terror" class="genre-checkbox hidden"> <span>🎬 Terror</span></label>
+                        <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="Western" class="genre-checkbox hidden"> <span>🎬📺 Western</span></label>
                     </div>
                 </div>
             </div>
@@ -81,11 +81,11 @@
         
         <!-- Menú de navegación -->
         <nav id="menu" class="hidden absolute top-16 right-4 bg-steel-blue p-4 rounded-md shadow-lg flex flex-col gap-2 lg:flex lg:relative lg:top-auto lg:right-auto lg:bg-transparent lg:p-0 lg:shadow-none lg:flex-row lg:gap-2">
-            <button class="w-24 bg-neon-cyan px-4 py-2 rounded-md text-midnight-blue font-bold">Añadir</button>
-            <button class="w-24 bg-gray-blue/50 px-4 py-2 rounded-md text-midnight-blue font-bold">Eliminar</button>
-            <button class="w-24 bg-gray-blue/50 px-4 py-2 rounded-md text-midnight-blue font-bold">Editar</button>
+            <a href="buscar.html" class="w-24 bg-neon-cyan px-4 py-2 rounded-md text-midnight-blue font-bold hover:scale-105 transition">Añadir</a>
+            <button class="w-24 bg-gray-blue/50 px-4 py-2 rounded-md text-midnight-blue font-bold hover:scale-105 transition">Eliminar</button>
+            <button class="w-24 bg-gray-blue/50 px-4 py-2 rounded-md text-midnight-blue font-bold hover:scale-105 transition">Editar</button>
             <div class="relative">
-                <button id="profileButton" class="w-24 bg-gray-blue/50 px-4 py-2 rounded-md text-midnight-blue font-bold">Perfil</button>
+                <button id="profileButton" class="w-24 bg-gray-blue/50 px-4 py-2 rounded-md text-midnight-blue font-bold hover:scale-105 transition">Perfil</button>
                 <div id="profileMenu" class="absolute right-0 mt-2 w-48 bg-steel-blue text-gray-blue rounded-xl shadow-lg hidden flex flex-col z-50 divide-y divide-gray-blue/30">
                     <a href="#" class="block px-4 py-3 font-semibold hover:bg-neon-cyan hover:text-midnight-blue transition rounded-t-xl">Cambiar Contraseña</a>
                     <a href="#" class="block px-4 py-3 font-semibold hover:bg-neon-cyan hover:text-midnight-blue transition rounded-b-xl">Cerrar Sesión</a>
@@ -98,7 +98,7 @@
     <main class="p-8">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <!-- Tarjeta de película -->
-            <div class="movie-card bg-steel-blue p-4 rounded-lg shadow-lg flex flex-col items-center">
+            <a href="#" class="movie-card bg-steel-blue p-4 rounded-lg shadow-lg flex flex-col items-center hover:scale-105 transition">
                 <img src="../assets/img/poster.jpg" alt="Portada" class="w-full rounded-md shadow-md">
                 <h3 class="text-neon-cyan text-lg font-bold mt-2 text-center">Título de Película 1</h3>
                 <p class="movie-type text-sm text-gray-blue text-center bg-neon-cyan/20 px-2 py-1 rounded-md">📺 Serie</p>
@@ -106,9 +106,9 @@
                     <span class="movie-genre bg-neon-cyan text-midnight-blue px-3 py-1 rounded-full text-xs font-bold" data-genero="accion">Acción</span>
                     <span class="movie-genre bg-neon-cyan text-midnight-blue px-3 py-1 rounded-full text-xs font-bold" data-genero="aventura">Aventura</span>
                 </div>
-            </div>
+            </a>
             <!-- Tarjeta de película -->
-            <div class="movie-card bg-steel-blue p-4 rounded-lg shadow-lg flex flex-col items-center">
+            <div class="movie-card bg-steel-blue p-4 rounded-lg shadow-lg flex flex-col items-center hover:scale-105 transition">
                 <img src="../assets/img/poster.jpg" alt="Portada" class="w-full rounded-md shadow-md">
                 <h3 class="text-neon-cyan text-lg font-bold mt-2 text-center">Título de Película 2</h3>
                 <p class="movie-type text-sm text-gray-blue text-center bg-neon-cyan/20 px-2 py-1 rounded-md">📺 Serie</p>
