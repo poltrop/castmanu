@@ -9,6 +9,18 @@ from watchdog.observers.polling import PollingObserver
 monitor_folder = "/media/transform"
 final_folder = "/media/videos"
 
+# Función para comprobar capitulo, con formato inicial ***capitulo***
+def comprobarCapitulo(texto):
+    if texto.startswith('***'):
+        fin = texto.find('***', 3)
+        if fin != -1:
+            contenido = texto[3:fin]
+            if contenido.isdigit():
+                numero = contenido
+                resto = texto[fin+3:].lstrip()
+                return numero, resto
+    return None, texto
+
 # Función para esperar a que un archivo termine de renombrarse
 def wait_for_file(file_path, timeout=80):
     """Espera a que un archivo deje de cambiar de tamaño antes de procesarlo."""
@@ -67,20 +79,25 @@ def process_file(input_file):
     # Obtener nombre sin extensión y extensión original
     file_base, file_ext = os.path.splitext(file_name_with_extension)
     
+    capitulo, file_base = comprobarCapitulo(file_base)
+        
     os.chdir(final_folder)
     os.mkdir(file_base)
     os.chdir(file_base)
+    if capitulo:
+        os.mkdir(capitulo)
+        os.chdir(capitulo)
 
     # EN ESTE PUNTO ESTAMOS DENTRO DE LA CARPETA DEL NUEVO VIDEO
 
     # Comando FFmpeg
-    comando_info = f"ffprobe -loglevel quiet -print_format json -show_streams {input_file}"
+    comando_info = f"ffprobe -loglevel quiet -print_format json -show_streams '{input_file}'"
     info = subprocess.check_output(comando_info, shell=True)
     info = json.loads(info)
 
     contador_subs=0
     lengua_subs=[]
-    comando_subs = f"ffmpeg -loglevel quiet -i {input_file}"
+    comando_subs = f"ffmpeg -loglevel quiet -i '{input_file}'"
     for stream in info.get("streams"):
         if stream.get("codec_type") == "subtitle":
             if contador_subs == 0:
@@ -102,7 +119,7 @@ def process_file(input_file):
     bitrate_aud = "320k" # Le ponemos este valor por defecto por si algo falla
     lengua_audios = [] # Lo usamos luego para modificar el master
     # Constructor del megacomando ffmpeg
-    comando = f"ffmpeg -loglevel quiet -hwaccel cuda -i {input_file}"
+    comando = f"ffmpeg -loglevel quiet -hwaccel cuda -i '{input_file}'"
     # Recorrer las pistas de audio y generar los comandos
     for stream in info.get("streams"):
         if stream.get("codec_type") == "video":

@@ -16,19 +16,19 @@ def check_auth():
     if not auth.startswith("Bearer ") or auth.split(" ", 1)[1] != API_KEY:
         abort(401)
 
-@app.route("/upload", methods=["POST"])
-def upload():
+@app.route("/upload/<new_name>", methods=["POST"])
+def upload(new_name):
     check_auth()
     if 'file' not in request.files:
         return "No file provided", 400
     file = request.files['file']
     if not is_video(file):
         return "El archivo no es un video válido", 400
-    new_name = request.args.get("new_name", None)
-    if new_name and new_name.strip():
-        filename = new_name + os.path.splitext(file.filename)[1]
-    else:
-        filename = file.filename
+    extraCap = request.args.get("capitulo")
+    filename = ""
+    if extraCap:
+        filename += f"***{extraCap}***"
+    filename += new_name + os.path.splitext(file.filename)[1]
     path = os.path.join(UPLOAD_FOLDER, filename)
     file.save(path)
     return "File uploaded", 200
@@ -92,8 +92,8 @@ def is_video(file):
             "ffprobe", "-v", "error", "-show_streams", "-select_streams", "v:0", "-i", "pipe:0"
         ]
         
-        # Ejecutamos el comando con el archivo pasado directamente
-        result = subprocess.run(command, input=file.read(1048576), stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # Lee solo los primeros 4KB del archivo
+        # Ejecutamos el comando con el archivo pasado directamente. 20MB
+        result = subprocess.run(command, input=file.read(20 * 1024 * 1024), stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # Lee solo los primeros 4KB del archivo
 
         # Si el comando ffprobe encuentra un flujo de video, consideramos que es un video
         if result.returncode == 0 and result.stdout:
