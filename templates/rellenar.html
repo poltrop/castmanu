@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Añadir - ManuCast</title>
+    <!-- Favicons -->
+    <link rel="icon" href="../assets/img/favicon/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="../assets/img/favicon/favicon-16x16.png" sizes="16x16" type="image/png">
+    <link rel="icon" href="../assets/img/favicon/favicon-32x32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="../assets/img/favicon/apple-touch-icon.png">
+    <link rel="icon" href="../assets/img/favicon/android-chrome-192x192.png" sizes="192x192" type="image/png">
+    <link rel="icon" href="../assets/img/favicon/android-chrome-512x512.png" sizes="512x512" type="image/png">
+    <!-- Scripts y estilos -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <script src="../assets/js/main/mainRellenar.js" type="module"></script>
+</head>
+<body class="bg-midnight-blue text-gray-blue min-h-screen">
+    <div id="loading-spinner" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="w-12 h-12 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
+    </div>
+    <!-- Header -->
+    <header class="bg-steel-blue sticky top-0 w-full p-4 shadow-lg flex items-center justify-between z-10">
+        <a href="home.html" class="text-neon-cyan text-xl font-bold sm:text-2xl me-2">ManuCast</a>
+        <!-- Menú Hamburguesa -->
+        <button id="menuToggle" class="lg:hidden bg-gray-blue/50 px-4 py-2 rounded-md text-midnight-blue font-bold">☰</button>
+        
+        <!-- Menú de navegación -->
+        <nav id="menu" class="hidden absolute top-16 right-4 bg-steel-blue p-4 rounded-md shadow-lg flex flex-col gap-2 lg:flex lg:relative lg:top-auto lg:right-auto lg:bg-transparent lg:p-0 lg:shadow-none lg:flex-row lg:gap-2">
+            <a href="buscar.html" class="w-24 bg-neon-cyan px-4 py-2 rounded-md text-midnight-blue font-bold hover:scale-105 transition">Añadir</a>
+            <button class="w-24 bg-gray-blue/50 px-4 py-2 rounded-md text-midnight-blue font-bold hover:scale-105 transition">Eliminar</button>
+            <button class="w-24 bg-gray-blue/50 px-4 py-2 rounded-md text-midnight-blue font-bold hover:scale-105 transition">Editar</button>
+            <div class="relative">
+                <button id="profileButton" class="w-24 bg-gray-blue/50 px-4 py-2 rounded-md text-midnight-blue font-bold hover:scale-105 transition">Perfil</button>
+                <div id="profileMenu" class="absolute right-0 mt-2 w-48 bg-steel-blue text-gray-blue rounded-xl shadow-lg hidden flex flex-col z-50 divide-y divide-gray-blue/30">
+                    <a href="#" class="block px-4 py-3 font-semibold hover:bg-neon-cyan hover:text-midnight-blue transition rounded-t-xl">Cambiar Contraseña</a>
+                    <a href="#" class="block px-4 py-3 font-semibold hover:bg-neon-cyan hover:text-midnight-blue transition rounded-b-xl">Cerrar Sesión</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <!-- Contenido principal -->
+    <main class="p-8 mx-auto text-center flex flex-col items-center justify-center min-h-[80vh]">
+        <h1 class="text-2xl sm:text-3xl text-neon-cyan font-bold mb-6">Rellena los datos de tu contenido</h1>
+      
+        <!-- Título -->
+        <label class="block mb-2 font-semibold text-gray-blue">Título</label>
+        <input id="titulo" type="text" placeholder="Título" class="w-full sm:w-2/4 p-3 mb-4 rounded-md bg-deep-black text-gray-blue focus:ring-2 focus:ring-neon-cyan" />
+      
+        <!-- Portada -->
+        <label class="block mb-2 font-semibold text-gray-blue">Portada</label>
+        <input id="portada" type="file" accept="image/*" class="w-full sm:w-2/4 p-3 mb-4 bg-deep-black text-gray-blue rounded-md file:bg-neon-cyan file:text-midnight-blue file:font-bold file:px-4 file:py-2 file:rounded-md file:border-0" />
+      
+        <!-- Tipo -->
+        <label class="block mb-2 font-semibold text-gray-blue">Tipo</label>
+        <select id="type" class="mb-4 p-3 bg-deep-black text-center text-gray-blue rounded-md focus:ring-2 focus:ring-neon-cyan w-48">
+            <option value="Pelicula">Película</option>
+            <option value="Serie">Serie</option>
+            <option selected value="Otro">Otro</option>
+        </select>
+
+        <!-- Capitulo -->
+        <label id="labelCap" class="block mb-2 font-semibold text-gray-blue hidden">Capitulo</label>
+        <input id="capitulo" type="number" min="1" step="1" placeholder="Ej. 1" class="w-24 p-3 mb-4 rounded-md bg-deep-black text-gray-blue focus:ring-2 focus:ring-neon-cyan hidden" />
+      
+        <!-- Géneros -->
+        <label class="block mb-2 font-semibold text-gray-blue">Géneros</label>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-4 max-w-3xl genre-container">
+            <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Acción" class="genre-checkbox hidden"> <span>🎬 Acción</span></label>
+            <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="Acción y Aventura" class="genre-checkbox hidden"> <span>📺 Acción y Aventura</span></label>
+            <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="Animación" class="genre-checkbox hidden"> <span>🎬📺 Animación</span></label>
+            <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Aventura" class="genre-checkbox hidden"> <span>🎬 Aventura</span></label>
+            <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Bélica" class="genre-checkbox hidden"> <span>🎬 Bélica</span></label>
+            <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Ciencia ficción" class="genre-checkbox hidden"> <span>🎬 Ciencia ficción</span></label>
+            <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="Ciencia ficción y Fantasía" class="genre-checkbox hidden"> <span>📺 Ciencia ficción y Fantasía</span></label>
+            <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="Comedia" class="genre-checkbox hidden"> <span>🎬📺 Comedia</span></label>
+            <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="Crimen" class="genre-checkbox hidden"> <span>🎬📺 Crimen</span></label>
+            <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="Documental" class="genre-checkbox hidden"> <span>🎬📺 Documental</span></label>
+            <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="Drama" class="genre-checkbox hidden"> <span>🎬📺 Drama</span></label>
+            <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="Familia" class="genre-checkbox hidden"> <span>🎬📺 Familia</span></label>
+            <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Fantasía" class="genre-checkbox hidden"> <span>🎬 Fantasía</span></label>
+            <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="Guerra y Política" class="genre-checkbox hidden"> <span>📺 Guerra y Política</span></label>
+            <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Historia" class="genre-checkbox hidden"> <span>🎬 Historia</span></label>
+            <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="Misterio" class="genre-checkbox hidden"> <span>🎬📺 Misterio</span></label>
+            <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Música" class="genre-checkbox hidden"> <span>🎬 Música</span></label>
+            <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="Niños" class="genre-checkbox hidden"> <span>📺 Niños</span></label>
+            <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="Noticias" class="genre-checkbox hidden"> <span>📺 Noticias</span></label>
+            <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Película de TV" class="genre-checkbox hidden"> <span>🎬 Película de TV</span></label>
+            <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="Reality" class="genre-checkbox hidden"> <span>📺 Reality</span></label>
+            <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Romance" class="genre-checkbox hidden"> <span>🎬 Romance</span></label>
+            <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="Soap" class="genre-checkbox hidden"> <span>📺 Soap</span></label>
+            <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Suspense" class="genre-checkbox hidden"> <span>🎬 Suspense</span></label>
+            <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="Talk Show" class="genre-checkbox hidden"> <span>📺 Talk Show</span></label>
+            <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Terror" class="genre-checkbox hidden"> <span>🎬 Terror</span></label>
+            <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="Western" class="genre-checkbox hidden"> <span>🎬📺 Western</span></label>
+        </div>
+      
+        <!-- Sinopsis -->
+        <label class="block mb-2 font-semibold text-gray-blue">Sinopsis</label>
+        <textarea id="sinopsis" placeholder="Sinopsis" rows="5" class="w-full sm:w-2/4 p-3 rounded-md bg-deep-black text-gray-blue focus:ring-2 focus:ring-neon-cyan mb-4 resize-none"></textarea>
+      
+        <!-- Archivo -->
+        <label class="block mb-2 font-semibold text-gray-blue">Archivo</label>
+        <input id="archivo" type="file" accept="video/*" class="w-full sm:w-2/4 p-3 mb-6 bg-deep-black text-gray-blue rounded-md file:bg-neon-cyan file:text-midnight-blue file:font-bold file:px-4 file:py-2 file:rounded-md file:border-0" />
+
+        <!-- Botón Final -->
+        <button id="subir" class="bg-neon-cyan text-midnight-blue px-6 py-2 rounded-md font-bold hover:scale-105 transition disabled:cursor-not-allowed disabled:bg-gray-400 disabled:text-gray-600 disabled:hover:scale-100">Subir</button>
+        <div id="errorMsg" class="text-red-400"></div>
+      </main>
+</body>
+</html>
