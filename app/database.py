@@ -46,7 +46,7 @@ class Castmanu:
     async def login(self, username: str, password: str):
         user = await self.fetch("SELECT * FROM users WHERE username=%s", (username))
         if user and check_password_hash(user["password"], password):
-            return {"id": user["id"]}
+            return {"id": user["id"], "admin": user["admin"]}
         return None
     
     async def isAdmin(self, id):
@@ -56,7 +56,6 @@ class Castmanu:
         return True
 
     
-#generate_password_hash(password)
     async def register(self, username: str, email: str, password: str, admin: bool = False):
         # Verificar si el email o username ya existen
         existing_user = await self.fetch("SELECT * FROM users WHERE email=%s", (email))
@@ -105,18 +104,29 @@ class Castmanu:
         return film
     
     # Añadir pelicula o elemento
-    async def add_film(self, title, type, sinopsis, poster_format, uploader):
+    async def add_film(self, title, type, sinopsis, poster_format, uploader, capitulo, generos):
         
         await self.isAdmin(uploader)
 
-        file = f'https://castmanu.ddns.net/videos/{title}/master.m3u8'
+        if type == "Serie":
+            file = f'https://castmanu.ddns.net/videos/{title}/{capitulo}/master.m3u8'
+        else:
+            file = f'https://castmanu.ddns.net/videos/{title}/master.m3u8'
 
         poster = None
         if poster_format:
-            poster = f'https://castmanu.ddns.net/fotos/{title}.{poster_format}'
+            if poster_format.startswith("http"):
+                poster = poster_format
+            else:
+                poster = f'https://castmanu.ddns.net/fotos/{title}.{poster_format}'
 
-        await self.fetch("INSERT INTO films(title, type, sinopsis, poster, file, uploader) VALUES(%s, %s, %s, %s, %s, %s)",(title, type, sinopsis, poster, file, uploader))
-
+        id = await self.fetch("INSERT INTO films(title, type, sinopsis, poster, file, uploader, capitulo) VALUES(%s, %s, %s, %s, %s, %s, %s) RETURNING id",(title, type, sinopsis, poster, file, uploader, capitulo))
+        if generos:
+            insertGeneros = ""
+            for genero in generos:
+                insertGeneros += f" ({id["id"]}, {self.mapGenero(genero)}),"
+            insertGeneros = insertGeneros[:-1]
+            await self.fetch(f"INSERT INTO film_genres VALUES{insertGeneros}")
         return {"success": True, "message": "Pelicula añadida"}
     
     # Eliminar pelicula o elemento
@@ -127,3 +137,35 @@ class Castmanu:
         await self.fetch("DELETE FROM films WHERE id = %s",(id))
 
         return {"success": True, "message": "Pelicula eliminada"}
+    
+    def mapGenero(self, genero):
+        mapping = {
+            "Acción": 1,
+            "Acción y Aventura": 2,
+            "Animación": 3,
+            "Aventura": 4,
+            "Bélica": 5,
+            "Ciencia ficción": 6,
+            "Ciencia ficción y Fantasía": 7,
+            "Comedia": 8,
+            "Crimen": 9,
+            "Documental": 10,
+            "Drama": 11,
+            "Familia": 12,
+            "Fantasía": 13,
+            "Guerra y Política": 14,
+            "Historia": 15,
+            "Misterio": 16,
+            "Música": 17,
+            "Niños": 18,
+            "Noticias": 19,
+            "Película de TV": 20,
+            "Reality": 21,
+            "Romance": 22,
+            "Soap": 23,
+            "Suspense": 24,
+            "Talk Show": 25,
+            "Terror": 26,
+            "Western": 27
+        }
+        return mapping.get(genero)
