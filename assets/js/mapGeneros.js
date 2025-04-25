@@ -63,3 +63,37 @@ export function mapGeneroId(generoId) {
         default: return null;
     }
 }
+
+export function mapGeneroInverso(genero) {
+    let mapping = {
+        "Acción": 1,
+        "Acción y Aventura": 2,
+        "Animación": 3,
+        "Aventura": 4,
+        "Bélica": 5,
+        "Ciencia ficción": 6,
+        "Ciencia ficción y Fantasía": 7,
+        "Comedia": 8,
+        "Crimen": 9,
+        "Documental": 10,
+        "Drama": 11,
+        "Familia": 12,
+        "Fantasía": 13,
+        "Guerra y Política": 14,
+        "Historia": 15,
+        "Misterio": 16,
+        "Música": 17,
+        "Niños": 18,
+        "Noticias": 19,
+        "Película de TV": 20,
+        "Reality": 21,
+        "Romance": 22,
+        "Soap": 23,
+        "Suspense": 24,
+        "Talk Show": 25,
+        "Terror": 26,
+        "Western": 27
+    };
+
+    return mapping[genero];
+}
