@@ -20,10 +20,10 @@ def check_auth():
 def upload(new_name):
     check_auth()
     if 'file' not in request.files:
-        return "No file provided", 400
+        return {"success": False, "message": "No se ha enviado archivo"}
     file = request.files['file']
     if not is_video(file):
-        return "El archivo no es un video válido", 400
+        return {"success": False, "message": "El archivo no es un video válido"}
     extraCap = request.args.get("capitulo")
     filename = ""
     if extraCap:
@@ -31,16 +31,16 @@ def upload(new_name):
     filename += new_name + os.path.splitext(file.filename)[1]
     path = os.path.join(UPLOAD_FOLDER, filename)
     file.save(path)
-    return "File uploaded", 200
+    return {"success": True, "message": "Subido con éxito"}
 
 @app.route("/delete/<filename>", methods=["DELETE"])
 def delete(filename):
     check_auth()
     path = os.path.join(VIDEOS_FOLDER, filename)
     if not os.path.exists(path):
-        return "File not found", 404
+        return {"success": False, "message": "No se encuentra el archivo"}
     os.remove(path)
-    return "File deleted", 200
+    return {"success": True, "message": "Borrado con éxito"}
 
 @app.route("/modify/<filename>", methods=["PATCH"])
 def rename(filename):
@@ -51,36 +51,36 @@ def rename(filename):
     old_path = os.path.join(VIDEOS_FOLDER, filename)
     new_path = os.path.join(VIDEOS_FOLDER, new_name)
     if not os.path.exists(old_path):
-        return "File not found", 404
+        return {"success": False, "message": "No se encuentra el archivo"}
     os.rename(old_path, new_path)
-    return "File renamed", 200
+    return {"success": True, "message": "Modificado con éxito"}
 
 @app.route("/uploadf/<new_name>", methods=["POST"])
 def uploadf(new_name):
     check_auth()
     if 'file' not in request.files:
-        return "No file provided", 400
+        return {"success": False, "message": "No se ha enviado archivo"}
     file = request.files['file']
     # Verifica si el archivo es una imagen antes de guardarlo
     if not is_image(file):
-        return "El archivo no es una imagen válida", 400
+        return {"success": False, "message": "El archivo no es una imagen válida"}
     filename = new_name + os.path.splitext(file.filename)[1]
     path = os.path.join(FOTOS_FOLDER, filename)
     file.save(path)
-    return "File uploaded", 200
+    return {"success": True, "message": "Subido con éxito"}
 
 @app.route("/getSubLanguages/<file>", methods=["GET"])
 def getSubLanguages(file):
     check_auth()
     languages = os.path.join(VIDEOS_FOLDER,file,"subs/languages.txt")
     if not os.path.exists(languages):
-        return jsonify({"error": "No existen subtitulos para este archivo"})
+        return {"success": False, "message": "No existen subtitulos para este archivo"}
     # Abre el archivo en modo lectura
     with open(languages, "r", encoding="utf-8") as file_subs:
         # Lee todas las líneas del archivo y las guarda en una lista
         lines = file_subs.readlines()
     lines = [line.strip() for line in lines]
-    return jsonify({"languages": lines})
+    return {"success": True, "message": "Subtitulos obtenido con éxito", "languages": lines}
 
 
 def is_video(file):
