@@ -1,4 +1,4 @@
-export function renderPagination(currentPage, totalPages, top, bottom) {
+export function renderPagination(currentPage, totalPages, posicion) {
     let paginationContainer = document.createElement("div");
     paginationContainer.classList.add("flex", "gap-2", "my-6", "justify-center");
 
@@ -51,8 +51,8 @@ export function renderPagination(currentPage, totalPages, top, bottom) {
     let paginationContainerBottom = paginationContainer.cloneNode(true);
     paginationContainer.addEventListener("click",cambiarPagina);
     paginationContainerBottom.addEventListener("click",cambiarPagina);
-    top.insertAdjacentElement("afterend", paginationContainer);
-    bottom.insertAdjacentElement("afterend", paginationContainerBottom);
+    posicion.insertAdjacentElement("beforebegin", paginationContainer);
+    posicion.insertAdjacentElement("afterend", paginationContainerBottom);
 }
 
 function createPageButton(text, pageNumber, isActive = false) {
