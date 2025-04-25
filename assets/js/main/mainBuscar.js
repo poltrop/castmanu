@@ -13,17 +13,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     
     function buscar(){
         let titulo = document.getElementById("tituloInput").value.trim().toLowerCase();
-        let error = document.getElementById("errorMsg");
-        if (titulo.length >= 2){
-            window.location.href = `buscar.html?titulo=${titulo}`
-        }else if (!error){
-            let div = document.createElement("div");
-            titulo.insertAdjacentElement("afterend",div);
-
-            div.id = "errorMsg";
-            div.classList.add("text-red-400");
-            div.innerText = "La busqueda debe contener al menos 2 carácteres";
-        }
+        window.location.href = `buscar.html?titulo=${titulo}`
     }
     
     async function mostrarCards(){
@@ -32,6 +22,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         let currentPage = parseInt(params.get("pagina")) || 1; //Coge 1 por defecto si no encuentra el param
         if (!titulo)
             return;
+        botonSeleccionar.classList.remove("hidden");
         let input = document.getElementById("tituloInput");
         input.value = titulo;
         let h1 = document.createElement("h1");
@@ -40,6 +31,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         botonBuscar.insertAdjacentElement("afterend",h1);
         let resultados = document.getElementById("resultados");
         let busqueda = await apiGet(`http://localhost:8000/get-tmdb/${titulo}/${currentPage}`); //llamada
+        let totalPages = busqueda.total_pages; // Lo actualizarás con la respuesta real de la API
+        renderPagination(currentPage, totalPages, resultados);
         let div,img,h3,p,div2,span;
         console.log(busqueda)
         let resultadosFiltrados = busqueda.results.filter(item =>item.media_type === "movie" || item.media_type === "tv");
@@ -100,8 +93,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 event.target.closest('.movie-card').classList.add('ring-4', 'ring-neon-cyan', 'ring-offset-2', 'selected');
             });
         });
-        let totalPages = busqueda.total_pages; // Lo actualizarás con la respuesta real de la API
-        renderPagination(currentPage, totalPages, h1, resultados);
     }
 
     function media(media){
