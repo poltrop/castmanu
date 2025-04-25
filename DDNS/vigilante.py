@@ -2,8 +2,12 @@ import os
 import subprocess
 import time
 import json
+import logging
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers.polling import PollingObserver
+
+logging.basicConfig(level=logging.INFO, format='%(message)s')
+logger = logging.getLogger(__name__)
 
 # Carpeta a monitorear
 monitor_folder = "/media/transform"
@@ -160,6 +164,7 @@ def process_file(input_file):
         f.writelines(nuevas_lineas)
 
     os.remove(input_file)
+    logger.info("Completado con éxito!")
 
 # Clase para manejar eventos de archivos en la carpeta monitoreada
 class VideoFileHandler(FileSystemEventHandler):
