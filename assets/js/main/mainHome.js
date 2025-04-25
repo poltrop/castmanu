@@ -1,5 +1,6 @@
 import { getAll } from "../getAll.js";
 import { toggleMenu, initHeader } from "../header.js";
+import { renderPagination } from "../paginacion.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
     initHeader();
@@ -9,53 +10,72 @@ document.addEventListener("DOMContentLoaded", async () => {
     let filterToggle = document.getElementById("filterToggle");
     let filterMenu = document.getElementById("filterMenu");
     // Parte de filtros DESPUES DE CARGAR TODO
+    let filterButton = document.getElementById("filterButton");
+    let cleanButton = document.getElementById("cleanButton");
     let searchInput = document.getElementById("searchInput");
     let typeFilter = document.getElementById("typeFilter");
-    let movies = document.querySelectorAll(".movie-card");
 
     toggleMenu(filterToggle, filterMenu);
     toggleMenu(genreButton, genreDropdown, true);
-    searchInput.addEventListener("input", applyFilters);
-    typeFilter.addEventListener("change", applyFilters);
+    filterButton.addEventListener("click",applyFilters)
+    cleanButton.addEventListener("click",cleanFilters)
     typeFilter.addEventListener("change", changeGenreList);
-    genreOptions.forEach(option => {
-        option.addEventListener("click", () => {
-            let checkbox = option.querySelector(".genre-checkbox");
-            checkbox.checked = !checkbox.checked;
-            if (checkbox.checked) {
-                option.classList.add("bg-neon-cyan", "text-midnight-blue", "rounded-full", "font-bold");
-            } else {
-                option.classList.remove("bg-neon-cyan", "text-midnight-blue", "rounded-full", "font-bold");
-            } // Cambia el color al seleccionar
-        });
+    genreOptions.forEach(option => {option.addEventListener("click", () => selectGenero(option))});
+    
+    let params = new URLSearchParams(window.location.search);
+    let titulo = params.get("titulo");
+    let tipo = params.get("tipo");
+    let generos = params.getAll("genero");
+
+    if (titulo)
+        searchInput.value = titulo;
+
+    if (tipo)
+        typeFilter.value = tipo;
+
+    generos.forEach(generoSelect => {
+        // Buscamos el input con ese valor
+        let input = document.querySelector(`.genre-checkbox[value="${generoSelect}"]`);
+        if (input) {
+            // Subimos al label contenedor
+            let label = input.closest("label");
+            if (label) {
+                selectGenero(label);
+            }
+        }
     });
-
-
+    
     // Ejecucion de funciones que rellenan cosas
-    //getAll();
+    getAll();
 
     function applyFilters() {
-        //console.log("filtrando");
+        console.log("filtrando");
         let searchText = searchInput.value.toLowerCase();
         //console.log(searchText);
         let selectedType = typeFilter.value.toLowerCase();
-        let selectedGenres = Array.from(document.querySelectorAll(".genre-checkbox:checked"))
-            .map(checkbox => checkbox.value);
+        let selectedGenres = Array.from(document.querySelectorAll(".genre-checkbox:checked")).map(checkbox => checkbox.value);
+        
+        if (!searchText && selectedType == "todo" && selectedGenres.length == 0)
+            return
 
-        movies.forEach(movie => {
-            let title = movie.querySelector("h3").textContent.toLowerCase();
-            //console.log(title);
-            let type = movie.querySelector(".movie-type").textContent.trim().toLowerCase();
-            let movieGenres = Array.from(movie.querySelectorAll(".movie-genre"))
-                .map(genre => genre.dataset.genero.toLowerCase()); // Usamos dataset
-            //console.log(movieGenres)
-            //console.log(selectedGenres)
-            let matchesSearch = !searchText || title.includes(searchText);
-            let matchesType = selectedType === "todo" || type.includes(selectedType);
-            let matchesGenres = !selectedGenres.length || selectedGenres.every(genre => movieGenres.includes(genre));
+        let extras = [];
+        if (searchText)
+            extras.push(`titulo=${searchText}`);
+        if (selectedType != "todo")
+            extras.push(`tipo=${selectedType}`);
+        if (selectedGenres.length > 0){
+            selectedGenres.forEach(genero => {
+                extras.push(`genero=${genero}`);
+            });
+        }
 
-            movie.classList.toggle("hidden", !(matchesSearch && matchesType && matchesGenres));
-        });
+        let queryParams = extras.length > 0 ? "?" + extras.join("&") : "";
+
+        window.location.href = `home.html${queryParams}`;
+    }
+
+    function cleanFilters(){
+        window.location.href = "home.html";
     }
 
     function changeGenreList(){
@@ -74,5 +94,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         } else if (selected === "serie") {
             movieGenres.forEach(label => label.classList.add('hidden'));
         }
+    }
+
+    function selectGenero(option){
+        let checkbox = option.querySelector(".genre-checkbox");
+        checkbox.checked = !checkbox.checked;
+        if (checkbox.checked) {
+            option.classList.add("bg-neon-cyan", "text-midnight-blue", "rounded-full", "font-bold");
+        } else {
+            option.classList.remove("bg-neon-cyan", "text-midnight-blue", "rounded-full", "font-bold");
+        } // Cambia el color al seleccionar
     }
 });

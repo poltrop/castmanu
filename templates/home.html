@@ -34,14 +34,14 @@
 
             <!-- Menú de filtros (oculto en pantallas pequeñas) -->
             <div id="filterMenu" class="hidden absolute mx-2 top-12 right-0 bg-steel-blue p-4 rounded-md shadow-lg lg:relative lg:top-auto lg:right-auto lg:bg-transparent lg:p-0 lg:shadow-none lg:flex lg:gap-2">
-                <select id="typeFilter" class="mb-2 p-2 lg:mb-0 bg-deep-black text-center text-gray-blue rounded-md focus:ring-2 focus:ring-neon-cyan w-28">
+                <select id="typeFilter" class="mb-2 p-2 lg:mb-0 bg-deep-black text-center text-gray-blue rounded-md focus:ring-2 focus:ring-neon-cyan w-24">
                     <option value="todo">Todos</option>
                     <option value="pelicula">Películas</option>
                     <option value="serie">Series</option>
                     <option value="otro">Otros</option>
                 </select>
                 <div class="relative">
-                    <button id="genreButton" class="w-28 p-2 bg-deep-black text-gray-blue rounded-md focus:ring-2 focus:ring-neon-cyan">Géneros</button>
+                    <button id="genreButton" class="w-24 p-2 bg-deep-black text-gray-blue rounded-md focus:ring-2 focus:ring-neon-cyan">Géneros</button>
                     <div id="genreDropdown" class="absolute mt-2 bg-deep-black text-gray-blue rounded-md shadow-md p-4 w-48 h-96 hidden gap-2 overflow-y-auto hidden">
                         <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Acción" class="genre-checkbox hidden"> <span>🎬 Acción</span></label>
                         <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="Acción y Aventura" class="genre-checkbox hidden"> <span>📺 Acción y Aventura</span></label>
@@ -72,6 +72,8 @@
                         <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="Western" class="genre-checkbox hidden"> <span>🎬📺 Western</span></label>
                     </div>
                 </div>
+                <button id="filterButton" class="w-24 bg-neon-cyan px-4 py-2 mt-2 lg:mt-0 rounded-md text-midnight-blue font-bold hover:scale-105 transition">Filtrar</button>
+                <button id="cleanButton" class="w-24 bg-neon-cyan px-4 py-2 mt-2 lg:mt-0 rounded-md text-midnight-blue font-bold hover:scale-105 transition">Limpiar</button>
             </div>
         </div>
 
@@ -96,78 +98,17 @@
     
     <!-- Contenido principal -->
     <main class="p-8">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div id="cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <!-- Tarjeta de película -->
             <a href="#" class="movie-card bg-steel-blue p-4 rounded-lg shadow-lg flex flex-col items-center hover:scale-105 transition">
                 <img src="../assets/img/poster.jpg" alt="Portada" class="w-full rounded-md shadow-md">
-                <h3 class="text-neon-cyan text-lg font-bold mt-2 text-center">Título de Película 1</h3>
+                <h3 class="text-neon-cyan text-lg font-bold mt-2 text-center">PRUEBA MIA</h3>
                 <p class="movie-type text-sm text-gray-blue text-center bg-neon-cyan/20 px-2 py-1 rounded-md">📺 Serie</p>
                 <div class="flex flex-wrap gap-2 mt-2">
                     <span class="movie-genre bg-neon-cyan text-midnight-blue px-3 py-1 rounded-full text-xs font-bold" data-genero="accion">Acción</span>
                     <span class="movie-genre bg-neon-cyan text-midnight-blue px-3 py-1 rounded-full text-xs font-bold" data-genero="aventura">Aventura</span>
                 </div>
-            </a>
-            <!-- Tarjeta de película -->
-            <div class="movie-card bg-steel-blue p-4 rounded-lg shadow-lg flex flex-col items-center hover:scale-105 transition">
-                <img src="../assets/img/poster.jpg" alt="Portada" class="w-full rounded-md shadow-md">
-                <h3 class="text-neon-cyan text-lg font-bold mt-2 text-center">Título de Película 2</h3>
-                <p class="movie-type text-sm text-gray-blue text-center bg-neon-cyan/20 px-2 py-1 rounded-md">📺 Serie</p>
-                <div class="flex flex-wrap gap-2 mt-2">
-                    <span class="movie-genre bg-neon-cyan text-midnight-blue px-3 py-1 rounded-full text-xs font-bold" data-genero="accion">Acción</span>
-                    <span class="movie-genre bg-neon-cyan text-midnight-blue px-3 py-1 rounded-full text-xs font-bold" data-genero="aventura">Aventura</span>
-                </div>
-            </div>
-            <!-- Tarjeta de película -->
-            <div class="movie-card bg-steel-blue p-4 rounded-lg shadow-lg flex flex-col items-center">
-                <img src="../assets/img/poster.jpg" alt="Portada" class="w-full rounded-md shadow-md">
-                <h3 class="text-neon-cyan text-lg font-bold mt-2 text-center">Título de Película 3</h3>
-                <p class="movie-type text-sm text-gray-blue text-center bg-neon-cyan/20 px-2 py-1 rounded-md">📺 Serie</p>
-                <div class="flex flex-wrap gap-2 mt-2">
-                    <span class="movie-genre bg-neon-cyan text-midnight-blue px-3 py-1 rounded-full text-xs font-bold" data-genero="accion">Acción</span>
-                    <span class="movie-genre bg-neon-cyan text-midnight-blue px-3 py-1 rounded-full text-xs font-bold" data-genero="aventura">Aventura</span>
-                </div>
-            </div>
-            <!-- Tarjeta de película -->
-            <div class="movie-card bg-steel-blue p-4 rounded-lg shadow-lg flex flex-col items-center">
-                <img src="../assets/img/poster.jpg" alt="Portada" class="w-full rounded-md shadow-md">
-                <h3 class="text-neon-cyan text-lg font-bold mt-2 text-center">Título de Película 4</h3>
-                <p class="movie-type text-sm text-gray-blue text-center bg-neon-cyan/20 px-2 py-1 rounded-md">📺 Serie</p>
-                <div class="flex flex-wrap gap-2 mt-2">
-                    <span class="movie-genre bg-neon-cyan text-midnight-blue px-3 py-1 rounded-full text-xs font-bold" data-genero="accion">Acción</span>
-                    <span class="movie-genre bg-neon-cyan text-midnight-blue px-3 py-1 rounded-full text-xs font-bold" data-genero="aventura">Aventura</span>
-                </div>
-            </div>
-            <!-- Tarjeta de película -->
-            <div class="movie-card bg-steel-blue p-4 rounded-lg shadow-lg flex flex-col items-center">
-                <img src="../assets/img/poster.jpg" alt="Portada" class="w-full rounded-md shadow-md">
-                <h3 class="text-neon-cyan text-lg font-bold mt-2 text-center">Título de Película 5</h3>
-                <p class="movie-type text-sm text-gray-blue text-center bg-neon-cyan/20 px-2 py-1 rounded-md">📺 Serie</p>
-                <div class="flex flex-wrap gap-2 mt-2">
-                    <span class="movie-genre bg-neon-cyan text-midnight-blue px-3 py-1 rounded-full text-xs font-bold" data-genero="accion">Acción</span>
-                    <span class="movie-genre bg-neon-cyan text-midnight-blue px-3 py-1 rounded-full text-xs font-bold" data-genero="aventura">Aventura</span>
-                </div>
-            </div>
-            <!-- Tarjeta de película -->
-            <div class="movie-card bg-steel-blue p-4 rounded-lg shadow-lg flex flex-col items-center">
-                <img src="../assets/img/poster.jpg" alt="Portada" class="w-full rounded-md shadow-md">
-                <h3 class="text-neon-cyan text-lg font-bold mt-2 text-center">Título de Película 6</h3>
-                <p class="movie-type text-sm text-gray-blue text-center bg-neon-cyan/20 px-2 py-1 rounded-md">📺 Serie</p>
-                <div class="flex flex-wrap gap-2 mt-2">
-                    <span class="movie-genre bg-neon-cyan text-midnight-blue px-3 py-1 rounded-full text-xs font-bold" data-genero="accion">Acción</span>
-                    <span class="movie-genre bg-neon-cyan text-midnight-blue px-3 py-1 rounded-full text-xs font-bold" data-genero="aventura">Aventura</span>
-                </div>
-            </div>
-            <!-- Tarjeta de película -->
-            <div class="movie-card bg-steel-blue p-4 rounded-lg shadow-lg flex flex-col items-center">
-                <img src="../assets/img/poster.jpg" alt="Portada" class="w-full rounded-md shadow-md">
-                <h3 class="text-neon-cyan text-lg font-bold mt-2 text-center">Título de Película 7</h3>
-                <p class="movie-type text-sm text-gray-blue text-center bg-neon-cyan/20 px-2 py-1 rounded-md">📺 Serie</p>
-                <div class="flex flex-wrap gap-2 mt-2">
-                    <span class="movie-genre bg-neon-cyan text-midnight-blue px-3 py-1 rounded-full text-xs font-bold" data-genero="accion">Acción</span>
-                    <span class="movie-genre bg-neon-cyan text-midnight-blue px-3 py-1 rounded-full text-xs font-bold" data-genero="aventura">Aventura</span>
-                </div>
-            </div>
-            
+            </a>          
         </div>
     </main>
 </body>
