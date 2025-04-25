@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiPostArchivo } from "../api.js";
+import { apiGet, apiPost, apiPostArchivo, apiDelete } from "../api.js";
 import { toggleMenu, initHeader } from "../header.js";
 import { mapGenero, mapGeneroId } from "../mapGeneros.js";
 
@@ -8,7 +8,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     type.addEventListener("change", changeGenreList);
     let params = new URLSearchParams(window.location.search);
     let genreOptions = document.querySelectorAll(".genre-option");
-    genreOptions.forEach(option => {option.addEventListener("click", () => selectGenero(option))});
+    genreOptions.forEach(option => {
+        option._handler = () => selectGenero(option);
+        option.addEventListener("click", option._handler);
+      });
     let botonSubir = document.getElementById("subir");
     botonSubir.addEventListener("click",subir);
     if (params.get("id")){
@@ -30,8 +33,13 @@ document.addEventListener("DOMContentLoaded", async () => {
                 generosIds.push(mapGeneroId(generoId.id));
             }
         });
+        genreOptions.forEach(option => {
+            option.removeEventListener("click", option._handler);
+            delete option._handler; // opcional, limpieza
+          });
         let tituloInput = document.getElementById("titulo");
         tituloInput.value = titulo;
+        tituloInput.disabled = true;
         if (poster){
             let img = document.createElement("img");
             img.src = poster;
@@ -42,9 +50,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             portadaInput.remove();
         }
         type.value = tipo;
+        type.disabled = true;
         changeGenreList();
         let sinopsisInput = document.getElementById("sinopsis");
         sinopsisInput.value = sinopsis;
+        sinopsisInput.disabled = true;
         generos.forEach(generoSelect => {
             // Buscamos el input con ese valor
             let input = document.querySelector(`.genre-checkbox[value="${generoSelect}"]`);
@@ -139,11 +149,12 @@ document.addEventListener("DOMContentLoaded", async () => {
                 extraCap = `?capitulo=${capitulo}`;
             }
 
+            if (params.get("id"))
+                data.idExt = params.get("id");
 
             let poster_format = null;
             if(poster.tagName == "INPUT" && poster.files.length > 0){
                 poster_format = poster.files[0].name.split('.').pop().toLowerCase();
-                await apiPostArchivo(`https://castmanu.ddns.net/uploadf/${titulo}`, poster.files[0], poster.files[0].name);
             }else if (poster.tagName == "IMG"){
                 poster_format = poster.src;
             }
@@ -151,12 +162,37 @@ document.addEventListener("DOMContentLoaded", async () => {
             if(poster_format)
                 data.poster_format = poster_format;
             console.log(data);
-            await apiPostArchivo(`https://castmanu.ddns.net/upload/${titulo}${extraCap}`, archivo.files[0], archivo.files[0].name);
             let resultadoDB = await apiPost('http://localhost:8000/add-film', data);
-            console.log(resultadoDB);
-            loading.classList.remove("hidden");
-            //llamada para subir a servirdor tanto la foto (si se sube archivo) como el video||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-            //Una vez hecho todo, comprobamos que no devuelvan error, y con un settimeout redirigimos a la pagina watch para el video||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+            if (!resultadoDB.success){
+                errorMsg.innerText = resultadoDB.message;
+                loading.classList.add("hidden");
+                return
+            }
+
+            if(poster.tagName == "INPUT" && poster.files.length > 0){
+                let resultadoFoto = await apiPostArchivo(`https://castmanu.ddns.net/uploadf/${titulo}`, poster.files[0], poster.files[0].name);
+                if (!resultadoFoto.success){
+                    errorMsg.innerText = resultadoFoto.message;
+                    await apiDelete(`http://localhost:8000/delete-film/${resultadoDB.id}`);
+                    loading.classList.add("hidden");
+                    return
+                }
+            }
+            let resultadoVideo = await apiPostArchivo(`https://castmanu.ddns.net/upload/${titulo}${extraCap}`, archivo.files[0], archivo.files[0].name);
+            if (!resultadoVideo.success){
+                errorMsg.innerText = resultadoVideo.message;
+                await apiDelete(`http://localhost:8000/delete-film/${resultadoDB.id}`);
+                loading.classList.add("hidden");
+                return
+            }
+            loading.classList.add("hidden");
+            errorMsg.classList.remove("text-red-400");
+            errorMsg.classList.add("text-green-600");
+            errorMsg.innerText = "Video añadido con éxito!";
+            setTimeout(() => {
+                window.location.href = `watch.html?id=${resultadoDB.id}`;
+            }, 1000);
         }
     }
 });
