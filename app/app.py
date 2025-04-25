@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import Optional, List
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, Query, status
 from fastapi.responses import JSONResponse
 from fastapi_jwt_auth import AuthJWT
 from fastapi_jwt_auth.exceptions import AuthJWTException
@@ -66,6 +66,7 @@ class Film(BaseModel):
     poster_format: Optional[str] = None
     capitulo: Optional[int] = None
     generos: Optional[List[str]] = None
+    idExt: Optional[int] = None
 
 # Cierra la pool de conexiones
 @app.on_event("shutdown")
@@ -103,8 +104,10 @@ async def check_auth(Authorize: AuthJWT = Depends()):
             "id": claims.get("id"),
             "admin": claims.get("admin")
         }
-    except Exception:
+    except HTTPException as e:
         raise HTTPException(status_code=401, detail="No autorizado")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error de servidor: {e}")
 
 @app.post("/logout")
 async def logout(Authorize: AuthJWT = Depends()):
@@ -122,18 +125,20 @@ async def register(request: RegisterRequest):
     
     return result
 
-@app.get("/get-all")
-async def get_all(Authorize: AuthJWT = Depends()):
+@app.get("/get-all/{pagina}")
+async def get_all(pagina: int, titulo: Optional[str] = None, tipo: Optional[str] = None, genero: Optional[List[int]] = Query(None), Authorize: AuthJWT = Depends()):
     try:
         # Verifica que el JWT es válido
-        Authorize.jwt_required()
+        #Authorize.jwt_required()
         
-        resultados = await db.get_all()
+        resultados = await db.get_all(pagina, titulo, tipo, genero)
 
         return resultados
 
-    except Exception as e:
+    except HTTPException as e:
         raise HTTPException(status_code=401, detail="No autorizado")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error de servidor: {e}")
     
 @app.get("/get-film/{id}")
 async def get_film(id: str, Authorize: AuthJWT = Depends()):
@@ -145,8 +150,10 @@ async def get_film(id: str, Authorize: AuthJWT = Depends()):
 
         return resultados
 
-    except Exception as e:
+    except HTTPException as e:
         raise HTTPException(status_code=401, detail="No autorizado")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error de servidor: {e}")
     
 @app.post("/add-film")
 async def add_film(film: Film, Authorize: AuthJWT = Depends()):
@@ -156,14 +163,14 @@ async def add_film(film: Film, Authorize: AuthJWT = Depends()):
         #claims = Authorize.get_raw_jwt()
         #uploader = claims.get("id")
         uploader = 1
-        resultados = await db.add_film(film.title, film.type, film.sinopsis, film.poster_format, uploader, film.capitulo, film.generos)
+        resultados = await db.add_film(film.title, film.type, film.sinopsis, film.poster_format, uploader, film.capitulo, film.generos, film.idExt)
 
         return resultados
 
-    except HTTPException as e:  # Captura cualquier HTTPException lanzada por admin
-        raise HTTPException(status_code=e.status_code, detail=e.detail)
+    except HTTPException as e:
+        raise HTTPException(status_code=401, detail="No autorizado")
     except Exception as e:
-        raise HTTPException(status_code=401, detail=f"No autorizado")
+        raise HTTPException(status_code=500, detail=f"Error de servidor: {e}")
     
 @app.post("/add-film-server")
 async def add_film(film: Film, Authorize: AuthJWT = Depends()):
@@ -177,26 +184,27 @@ async def add_film(film: Film, Authorize: AuthJWT = Depends()):
 
         return resultados
 
-    except HTTPException as e:  # Captura cualquier HTTPException lanzada por admin
-        raise HTTPException(status_code=e.status_code, detail=e.detail)
+    except HTTPException as e:
+        raise HTTPException(status_code=401, detail="No autorizado")
     except Exception as e:
-        raise HTTPException(status_code=401, detail=f"No autorizado")
+        raise HTTPException(status_code=500, detail=f"Error de servidor: {e}")
     
 @app.delete("/delete-film/{id}")
 async def delete_film(id: str, Authorize: AuthJWT = Depends()):
     try:
         # Verifica que el JWT es válido
-        Authorize.jwt_required()
-        claims = Authorize.get_raw_jwt()
-        deleter = claims.get("id")
+        #Authorize.jwt_required()
+        #claims = Authorize.get_raw_jwt()
+        #deleter = claims.get("id")
+        deleter = 1
         resultados = await db.delete_film(id, deleter)
 
         return resultados
 
-    except HTTPException as e:  # Captura cualquier HTTPException lanzada por admin
-        raise HTTPException(status_code=e.status_code, detail=e.detail)
-    except Exception as e:
+    except HTTPException as e:
         raise HTTPException(status_code=401, detail="No autorizado")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error de servidor: {e}")
     
 @app.get("/get-tmdb/{titulo}/{pagina}")
 async def get_tmdb(titulo: str, pagina: int, Authorize: AuthJWT = Depends()):
@@ -212,8 +220,10 @@ async def get_tmdb(titulo: str, pagina: int, Authorize: AuthJWT = Depends()):
         else:
             raise HTTPException(status_code=resultados.status_code,detail=f"TMDb devolvió un error: {resultados.status_code}")
 
-    except Exception as e:
+    except HTTPException as e:
         raise HTTPException(status_code=401, detail="No autorizado")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error de servidor: {e}")
     
 @app.get("/get-tmdb-movie/{id}")
 async def get_tmdb_movie(id: int, Authorize: AuthJWT = Depends()):
@@ -229,8 +239,10 @@ async def get_tmdb_movie(id: int, Authorize: AuthJWT = Depends()):
         else:
             raise HTTPException(status_code=resultados.status_code,detail=f"TMDb devolvió un error: {resultados.status_code}")
 
-    except Exception as e:
+    except HTTPException as e:
         raise HTTPException(status_code=401, detail="No autorizado")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error de servidor: {e}")
     
 @app.get("/get-tmdb-serie/{id}")
 async def get_tmdb_movie(id: int, Authorize: AuthJWT = Depends()):
@@ -246,5 +258,7 @@ async def get_tmdb_movie(id: int, Authorize: AuthJWT = Depends()):
         else:
             raise HTTPException(status_code=resultados.status_code,detail=f"TMDb devolvió un error: {resultados.status_code}")
 
-    except Exception as e:
+    except HTTPException as e:
         raise HTTPException(status_code=401, detail="No autorizado")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error de servidor: {e}")
