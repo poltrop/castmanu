@@ -15,9 +15,14 @@ CREATE TABLE IF NOT EXISTS films (
     poster VARCHAR(255),
     file VARCHAR(255) UNIQUE NOT NULL,
     uploader INT,
-    capitulo INT,
-    idExt INT,
+    UNIQUE (title, type),
     FOREIGN KEY (uploader) REFERENCES users(id)
+);
+CREATE TABLE IF NOT EXISTS serie_capitulos (
+    idSerie INT,
+    capitulo INT,
+    PRIMARY KEY (idSerie, capitulo),
+    FOREIGN KEY (idSerie) REFERENCES films(id) ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS genres (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -27,7 +32,7 @@ CREATE TABLE IF NOT EXISTS film_genres (
     idFilm INT,
     idGenre INT,
     PRIMARY KEY (idFilm, idGenre),
-    FOREIGN KEY (idFilm) REFERENCES films(id),
+    FOREIGN KEY (idFilm) REFERENCES films(id) ON DELETE CASCADE,
     FOREIGN KEY (idGenre) REFERENCES genres(id)
 );
 
@@ -143,4 +148,10 @@ INSERT INTO films(title, type, file) VALUES
 ('Inglourious Basterds', 'Pelicula', 'file_070'),
 ('The Big Bang Theory', 'Serie', 'file_071'),
 ('Rotten', 'Otro', 'file_072');
+ 
+INSERT INTO film_genres VALUES
+(11,1),
+(11,2),
+(28,1),
+(28,3);
  */
