@@ -6,7 +6,6 @@ services:
     volumes:
       - D:\WD\Videos:/media/videos  # Carpeta local vinculada al contenedor
       - D:\WD\Certs\letsencrypt:/etc/letsencrypt
-      - D:\WD\Fotos:/media/fotos
     ports:
       - "80:80"  # Nginx escuchará en el puerto 8080 del host
       - "443:443"
