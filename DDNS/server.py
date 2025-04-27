@@ -1,3 +1,4 @@
+import shutil
 from flask import Flask, request, abort, jsonify
 from PIL import Image
 from io import BytesIO
@@ -16,30 +17,64 @@ def check_auth():
     if not auth.startswith("Bearer ") or auth.split(" ", 1)[1] != API_KEY:
         abort(401)
 
-@app.route("/upload/<new_name>", methods=["POST"])
-def upload(new_name):
+@app.route("/upload/<new_name>/<tipo>", methods=["POST"])
+def upload(new_name, tipo):
     check_auth()
     if 'file' not in request.files:
         return {"success": False, "message": "No se ha enviado archivo"}
     file = request.files['file']
     if not is_video(file):
         return {"success": False, "message": "El archivo no es un video válido"}
+    filename = new_name + os.path.splitext(file.filename)[1]
+    path = os.path.join(VIDEOS_FOLDER, tipo)
+    os.chdir(path)
+    if not os.path.exists(new_name):
+        os.mkdir(new_name)
+    os.chdir(new_name)
     extraCap = request.args.get("capitulo")
-    filename = ""
     if extraCap:
-        filename += f"***{extraCap}***"
-    filename += new_name + os.path.splitext(file.filename)[1]
+        if not os.path.exists(extraCap):
+            os.mkdir(extraCap)
+        os.chdir(extraCap)
+        filename = f"***{extraCap}***" + filename
+    filename = f'^^^{tipo}^^^' + filename
     path = os.path.join(UPLOAD_FOLDER, filename)
     file.save(path)
     return {"success": True, "message": "Subido con éxito"}
 
-@app.route("/delete/<filename>", methods=["DELETE"])
-def delete(filename):
+@app.route("/uploadf/<new_name>/<tipo>", methods=["POST"])
+def uploadf(new_name, tipo):
     check_auth()
-    path = os.path.join(VIDEOS_FOLDER, filename)
+    if 'file' not in request.files:
+        return {"success": False, "message": "No se ha enviado archivo"}
+    file = request.files['file']
+    # Verifica si el archivo es una imagen antes de guardarlo
+    if not is_image(file):
+        return {"success": False, "message": "El archivo no es una imagen válida"}
+    path = os.path.join(VIDEOS_FOLDER, tipo)
+    os.chdir(path)
+    os.chdir(new_name)
+    if not os.path.exists("poster"):
+        os.mkdir("poster")
+    os.chdir("poster")
+    filename = new_name + os.path.splitext(file.filename)[1]
+    path = os.path.join(os.getcwd(), filename)
+    file.save(path)
+    return {"success": True, "message": "Subido con éxito"}
+
+@app.route("/delete/<filename>/<tipo>", methods=["DELETE"])
+def delete(filename, tipo):
+    check_auth()
+    path = os.path.join(VIDEOS_FOLDER, tipo, filename)
+    capitulo = request.args.get("capitulo")
+    if capitulo:
+        path = os.path.join(path, capitulo)
     if not os.path.exists(path):
         return {"success": False, "message": "No se encuentra el archivo"}
-    os.remove(path)
+    try:
+        shutil.rmtree(path)
+    except Exception as e:
+        return {"success": False, "message": f"Error al borrar: {str(e)}"}
     return {"success": True, "message": "Borrado con éxito"}
 
 @app.route("/modify/<filename>", methods=["PATCH"])
@@ -54,20 +89,6 @@ def rename(filename):
         return {"success": False, "message": "No se encuentra el archivo"}
     os.rename(old_path, new_path)
     return {"success": True, "message": "Modificado con éxito"}
-
-@app.route("/uploadf/<new_name>", methods=["POST"])
-def uploadf(new_name):
-    check_auth()
-    if 'file' not in request.files:
-        return {"success": False, "message": "No se ha enviado archivo"}
-    file = request.files['file']
-    # Verifica si el archivo es una imagen antes de guardarlo
-    if not is_image(file):
-        return {"success": False, "message": "El archivo no es una imagen válida"}
-    filename = new_name + os.path.splitext(file.filename)[1]
-    path = os.path.join(FOTOS_FOLDER, filename)
-    file.save(path)
-    return {"success": True, "message": "Subido con éxito"}
 
 @app.route("/getSubLanguages/<file>", methods=["GET"])
 def getSubLanguages(file):
