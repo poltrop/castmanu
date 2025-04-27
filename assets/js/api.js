@@ -88,3 +88,19 @@ export async function apiPostArchivo(url, archivo, nombre) {
 
     return await response.json();
 }
+
+export async function apiDeleteArchivo(url) {
+    const response = await fetch(url, {
+        method: "DELETE",
+        headers: {
+            "Authorization": "Bearer castmanu"
+        }
+    });
+
+    if (!response.ok) {
+        const errorText = await response.json();
+        throw new Error(`Error ${response.status}: ${errorText}`);
+    }
+
+    return await response.json();
+}
