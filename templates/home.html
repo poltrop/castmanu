@@ -14,10 +14,13 @@
     <!-- Scripts y estilos -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="../assets/css/style.css">
+    <script src="../assets/sweetalert/sweetalert.js"></script>
     <script src="../assets/js/main/mainHome.js" type="module"></script>
 </head>
 <body class="bg-midnight-blue text-gray-blue min-h-screen">
-    
+    <div id="loading-spinner" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="w-12 h-12 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
+    </div>
     <!-- Header -->
     <header class="bg-steel-blue sticky top-0 w-full p-4 shadow-lg flex items-center justify-between z-10">
         <a href="home.html" class="text-neon-cyan text-xl font-bold sm:text-2xl me-2">ManuCast</a>
@@ -84,7 +87,7 @@
         <!-- Menú de navegación -->
         <nav id="menu" class="hidden absolute top-16 right-4 bg-steel-blue p-4 rounded-md shadow-lg flex flex-col gap-2 lg:flex lg:relative lg:top-auto lg:right-auto lg:bg-transparent lg:p-0 lg:shadow-none lg:flex-row lg:gap-2">
             <a href="buscar.html" class="w-24 bg-neon-cyan px-4 py-2 rounded-md text-midnight-blue font-bold hover:scale-105 transition">Añadir</a>
-            <button class="w-24 bg-gray-blue/50 px-4 py-2 rounded-md text-midnight-blue font-bold hover:scale-105 transition">Eliminar</button>
+            <a href="home.html?eliminar=true" class="w-24 bg-gray-blue/50 px-4 py-2 rounded-md text-midnight-blue font-bold hover:scale-105 transition">Eliminar</a>
             <button class="w-24 bg-gray-blue/50 px-4 py-2 rounded-md text-midnight-blue font-bold hover:scale-105 transition">Editar</button>
             <div class="relative">
                 <button id="profileButton" class="w-24 bg-gray-blue/50 px-4 py-2 rounded-md text-midnight-blue font-bold hover:scale-105 transition">Perfil</button>
@@ -97,7 +100,8 @@
     </header>
     
     <!-- Contenido principal -->
-    <main class="p-8">
+    <main class="p-8 mx-auto flex flex-col items-center justify-center">
+        <h1 class="text-2xl sm:text-3xl text-neon-cyan font-bold mb-6 hidden">Selecciona elemenos para eliminar</h1>
         <div id="cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <!-- Tarjeta de película -->
             <a href="#" class="movie-card bg-steel-blue p-4 rounded-lg shadow-lg flex flex-col items-center hover:scale-105 transition">
@@ -110,6 +114,8 @@
                 </div>
             </a>          
         </div>
+        <button id="eliminar" class="mt-6 bg-neon-cyan text-midnight-blue px-6 py-2 rounded-md font-bold hover:scale-105 transition mb-8 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:text-gray-600 disabled:hover:scale-100 hidden" disabled>Eliminar</button>
+        <div id="errorMsg" class="text-red-400"></div>
     </main>
 </body>
 </html>
