@@ -11,21 +11,28 @@ document.addEventListener("DOMContentLoaded", async () => {
     genreOptions.forEach(option => {
         option._handler = () => selectGenero(option);
         option.addEventListener("click", option._handler);
-      });
+    });
     let botonSubir = document.getElementById("subir");
     botonSubir.addEventListener("click",subir);
+    let pelicula, titulo, poster, tipo, sinopsis, generos = [];
     if (params.get("id")){
-        let pelicula;
+        pelicula = await apiGet(`http://localhost:8000/get-film/${params.get("id")}`);
+        titulo = pelicula.title;
+        poster = !pelicula.poster ? "../assets/img/poster.jpg" : pelicula.poster;
+        tipo = pelicula.type;
+        sinopsis = pelicula.sinopsis;
+        generos = pelicula.generos;
+    } else if (params.get("idExt")){
         if (params.get("tipo") == "Pelicula"){
-            pelicula = await apiGet(`http://localhost:8000/get-tmdb-movie/${params.get("id")}`);
+            pelicula = await apiGet(`http://localhost:8000/get-tmdb-movie/${params.get("idExt")}`);
         }else{
-            pelicula = await apiGet(`http://localhost:8000/get-tmdb-serie/${params.get("id")}`);
+            pelicula = await apiGet(`http://localhost:8000/get-tmdb-serie/${params.get("idExt")}`);
         }
-        let titulo = pelicula.name || pelicula.title;
-        let poster = !pelicula.poster_path ? null : `https://image.tmdb.org/t/p/w500${pelicula.poster_path}`;
-        let tipo = params.get("tipo");
-        let sinopsis = pelicula.overview;
-        let genero, generos = [], generosIds = [];
+        titulo = pelicula.name || pelicula.title;
+        poster = !pelicula.poster_path ? null : `https://image.tmdb.org/t/p/w500${pelicula.poster_path}`;
+        tipo = params.get("tipo");
+        sinopsis = pelicula.overview;
+        let genero, generosIds = [];
         pelicula.genres.forEach(generoId => {
             genero = mapGenero(generoId.id);
             if (genero){
@@ -33,10 +40,12 @@ document.addEventListener("DOMContentLoaded", async () => {
                 generosIds.push(mapGeneroId(generoId.id));
             }
         });
+    }
+    if (params.get("id") || params.get("idExt")){
         genreOptions.forEach(option => {
             option.removeEventListener("click", option._handler);
             delete option._handler; // opcional, limpieza
-          });
+        });
         let tituloInput = document.getElementById("titulo");
         tituloInput.value = titulo;
         tituloInput.disabled = true;
@@ -126,73 +135,137 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (errorMsg.innerText)
             return
 
-        let confirmacion = confirm("Estás seguro de que deseas subirlo así?");
+        let { isConfirmed } = await Swal.fire({
+            title: "Estás seguro de que deseas subirlo así?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Si',
+            cancelButtonText: 'No',
+            background: '#1B2A41',
+            color: "#00A8E8",
+        });
+        console.log(isConfirmed);
 
-        if(confirmacion){
+        if(isConfirmed){
             let loading = document.getElementById("loading-spinner");
             loading.classList.remove("hidden");
-            let data ={
-                title: titulo,
-                type: tipo,
-            }
+            if (params.get("id")){
+                if (!tipo == "Serie"){
+                    errorMsg.innerText = "Solo se pueden añadir capitulos de series desde el volver a subir";
+                    loading.classList.add("hidden");
+                    return
+                }
 
-            if(selectedGenres.length > 0){
-                data.generos = selectedGenres;
-            }
+                let data ={
+                    idSerie: params.get("id"),
+                    capitulo: capitulo
+                }
 
-            if(sinopsis)
-                data.sinopsis = sinopsis;
+                let extraCap = `?capitulo=${capitulo}`;
+                let resultadoCapitulo = await apiPost('http://localhost:8000/add-capitulo', data);
+                if (!resultadoCapitulo.success){
+                    errorMsg.innerText = resultadoCapitulo.message;
+                    loading.classList.add("hidden");
+                    return
+                }
+                
+                let resultadoVideo = await apiPostArchivo(`https://castmanu.ddns.net/upload/${titulo}/${tipo}${extraCap}`, archivo.files[0], archivo.files[0].name);
+                if (!resultadoVideo.success){
+                    errorMsg.innerText = resultadoVideo.message;
+                    await apiDelete(`http://localhost:8000/delete-film/${params.get("id")}${extraCap}`);
+                    loading.classList.add("hidden");
+                    return
+                }
+            } else {
+                let data ={
+                    title: titulo,
+                    type: tipo,
+                }
+    
+                if(selectedGenres.length > 0){
+                    data.generos = selectedGenres;
+                }
+    
+                if(sinopsis)
+                    data.sinopsis = sinopsis;
+    
+                let extraCap = "";
+                
+                let poster_format = null;
+                if(poster.tagName == "INPUT" && poster.files.length > 0){
+                    poster_format = poster.files[0].name.split('.').pop().toLowerCase();
+                }else if (poster.tagName == "IMG"){
+                    poster_format = poster.src;
+                }
+                
+                if(poster_format)
+                    data.poster_format = poster_format;
+                console.log(data);
+                let resultadoDB = await apiPost('http://localhost:8000/add-film', data);
+                
+                if (!resultadoDB.success){
+                    errorMsg.innerText = resultadoDB.message;
+                    loading.classList.add("hidden");
+                    return
+                }
 
-            let extraCap = "";
-            if(capitulo){
-                data.capitulo = capitulo;
-                extraCap = `?capitulo=${capitulo}`;
-            }
-
-            if (params.get("id"))
-                data.idExt = params.get("id");
-
-            let poster_format = null;
-            if(poster.tagName == "INPUT" && poster.files.length > 0){
-                poster_format = poster.files[0].name.split('.').pop().toLowerCase();
-            }else if (poster.tagName == "IMG"){
-                poster_format = poster.src;
-            }
-
-            if(poster_format)
-                data.poster_format = poster_format;
-            console.log(data);
-            let resultadoDB = await apiPost('http://localhost:8000/add-film', data);
-
-            if (!resultadoDB.success){
-                errorMsg.innerText = resultadoDB.message;
-                loading.classList.add("hidden");
-                return
-            }
-
-            if(poster.tagName == "INPUT" && poster.files.length > 0){
-                let resultadoFoto = await apiPostArchivo(`https://castmanu.ddns.net/uploadf/${titulo}`, poster.files[0], poster.files[0].name);
-                if (!resultadoFoto.success){
-                    errorMsg.innerText = resultadoFoto.message;
+                if(capitulo){
+                    data = {
+                        idSerie: resultadoDB.id,
+                        capitulo: capitulo
+                    }
+                    extraCap = `?capitulo=${capitulo}`;
+                    let resultadoCapitulo = await apiPost('http://localhost:8000/add-capitulo', data);
+                    if (!resultadoCapitulo.success){
+                        errorMsg.innerText = resultadoCapitulo.message;
+                        await apiDelete(`http://localhost:8000/delete-film/${resultadoDB.id}`);
+                        loading.classList.add("hidden");
+                        return
+                    }
+                }
+                
+                let resultadoVideo = await apiPostArchivo(`https://castmanu.ddns.net/upload/${titulo}/${tipo}${extraCap}`, archivo.files[0], archivo.files[0].name);
+                if (!resultadoVideo.success){
+                    errorMsg.innerText = resultadoVideo.message;
                     await apiDelete(`http://localhost:8000/delete-film/${resultadoDB.id}`);
                     loading.classList.add("hidden");
                     return
                 }
+
+                if(poster.tagName == "INPUT" && poster.files.length > 0){
+                    let resultadoFoto = await apiPostArchivo(`https://castmanu.ddns.net/uploadf/${titulo}/${tipo}`, poster.files[0], poster.files[0].name);
+                    if (!resultadoFoto.success){
+                        errorMsg.innerText = resultadoFoto.message;
+                        await apiDelete(`http://localhost:8000/delete-film/${resultadoDB.id}`);
+                        loading.classList.add("hidden");
+                        return
+                    }
+                }
             }
-            let resultadoVideo = await apiPostArchivo(`https://castmanu.ddns.net/upload/${titulo}${extraCap}`, archivo.files[0], archivo.files[0].name);
-            if (!resultadoVideo.success){
-                errorMsg.innerText = resultadoVideo.message;
-                await apiDelete(`http://localhost:8000/delete-film/${resultadoDB.id}`);
-                loading.classList.add("hidden");
-                return
-            }
+
             loading.classList.add("hidden");
             errorMsg.classList.remove("text-red-400");
             errorMsg.classList.add("text-green-600");
             errorMsg.innerText = "Video añadido con éxito!";
-            setTimeout(() => {
-                window.location.href = `watch.html?id=${resultadoDB.id}`;
-            }, 1000);
+            let idRedirect = params.get("id") || resultadoDB.id;
+            if (capitulo){
+                let { isConfirmed } = await Swal.fire({
+                    title: 'Deseas subir otro capitulo?',
+                    text: 'Puedes seguir subiendo o ir a ver el video ahora.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    allowOutsideClick: false,
+                    confirmButtonText: 'Si',
+                    cancelButtonText: 'No',
+                    background: '#1B2A41',
+                    color: "#00A8E8",
+                });
+                if (isConfirmed){
+                    window.location.href = `rellenar.html?id=${idRedirect}`;
+                    return;
+                }
+            }
+            window.location.href = `watch.html?id=${idRedirect}`;
         }
     }
 });
