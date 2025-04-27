@@ -107,9 +107,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         // Ocultar según el tipo seleccionado
         if (selected === "pelicula") {
-            serieGenres.forEach(label => label.classList.add('hidden'));
+            serieGenres.forEach(label => {
+                label.classList.add('hidden');
+                if (label.classList.contains("bg-neon-cyan"))
+                    selectGenero(label);
+            });
         } else if (selected === "serie") {
-            movieGenres.forEach(label => label.classList.add('hidden'));
+            movieGenres.forEach(label => {
+                label.classList.add('hidden');
+                if (label.classList.contains("bg-neon-cyan"))
+                    selectGenero(label);
+            });
         }
     }
 

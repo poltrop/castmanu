@@ -92,11 +92,20 @@ document.addEventListener("DOMContentLoaded", async () => {
         
         // Ocultar según el tipo seleccionado
         if (selected === "Pelicula") {
-            serieGenres.forEach(label => label.classList.add('hidden'));
+            serieGenres.forEach(label => {
+                label.classList.add('hidden');
+                if (label.classList.contains("bg-neon-cyan"))
+                    selectGenero(label);
+            });
+                
         } else if (selected === "Serie") {
             labelCap.classList.remove("hidden");
             capitulo.classList.remove("hidden");
-            movieGenres.forEach(label => label.classList.add('hidden'));
+            movieGenres.forEach(label => {
+                label.classList.add('hidden');
+                if (label.classList.contains("bg-neon-cyan"))
+                    selectGenero(label);
+            });
         }
     }
 
@@ -144,14 +153,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             background: '#1B2A41',
             color: "#00A8E8",
         });
-        console.log(isConfirmed);
 
         if(isConfirmed){
             let loading = document.getElementById("loading-spinner");
             loading.classList.remove("hidden");
             if (params.get("id")){
-                if (!tipo == "Serie"){
-                    errorMsg.innerText = "Solo se pueden añadir capitulos de series desde el volver a subir";
+                if (tipo != "Serie"){
+                    errorMsg.innerText = "Solo se pueden añadir capitulos de series desde esta sección";
                     loading.classList.add("hidden");
                     return
                 }
@@ -200,7 +208,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 
                 if(poster_format)
                     data.poster_format = poster_format;
-                console.log(data);
+                
                 let resultadoDB = await apiPost('http://localhost:8000/add-film', data);
                 
                 if (!resultadoDB.success){
