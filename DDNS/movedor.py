@@ -36,7 +36,8 @@ while True:
             print(f"Detectado: {src_path} – comprobando estabilidad...")
             if wait_for_file(src_path):
                 print(f"✅ Estable. Moviendo {src_path} → {dst_path}")
-                shutil.move(src_path, dst_path)
+                if not os.path.exists(dst_path):
+                    shutil.move(src_path, dst_path)
             else:
                 print(f"⚠️ El archivo {src_path} no se estabilizó a tiempo.")
     time.sleep(2)
