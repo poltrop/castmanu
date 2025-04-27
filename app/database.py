@@ -35,6 +35,25 @@ class Castmanu:
             async with conn.cursor() as cursor:
                 await cursor.execute(query, params)
                 return await cursor.fetchall() if multiple else await cursor.fetchone()
+    
+    # Inicia una transaccion
+    async def init_transaction(self):
+        conn = await self.get_connection()
+        cursor = await conn.cursor()
+        await conn.begin()
+        return conn, cursor
+    
+    # Añadir operaciones a la transacción.
+    async def add_to_transaction(self, cursor, query: str, params: tuple = ()):
+        await cursor.execute(query, params)
+        return await cursor.fetchone()
+    
+    # Finaliza la transacción (commit o rollback).
+    async def finish_transaction(self, conn, commit=True):
+        if commit:
+            await conn.commit()
+        else:
+            await conn.rollback()
 
     # Cierra el pool de conexiones cuando la aplicación termina.
     async def close_pool(self):
@@ -109,20 +128,26 @@ class Castmanu:
         films = await self.fetch(query, tuple(params), True)
 
         genres_map = await self.fetch("SELECT idFilm, genre FROM film_genres INNER JOIN genres ON idGenre = id", (), True)
+        capitulos_map = await self.fetch("SELECT idSerie, capitulo FROM serie_capitulos", (), True)
 
-        # Agrupamos los géneros por id de película
+        # Agrupamos los géneros por id de película y capitulos por serie
         generos_por_pelicula = defaultdict(list)
+        capitulos_por_serie = defaultdict(list)
         for row in genres_map:
             generos_por_pelicula[row["idFilm"]].append(row["genre"])
+        for row in capitulos_map:
+            capitulos_por_serie[row["idSerie"]].append(row["capitulo"])
 
-        # Añadir los géneros a cada film
+        # Añadir los géneros a cada film y capitulos a cada serie
         for film in films:
             film["genres"] = generos_por_pelicula.get(film["id"], [])
+        for serie in films:
+            serie["capitulos"] = capitulos_por_serie.get(serie["id"], [])
 
         return {"peliculas": films, "total_paginas": total_paginas["total"]}
     
     # Esto devuelve la info de 1 peli concreta
-    async def get_film(self,id):
+    async def get_film(self, id):
         # Primero conseguimos todos los elementos
         film = await self.fetch("SELECT id, title, type, sinopsis, poster, file FROM films WHERE id = %s", (id))
         genres_map = await self.fetch("SELECT idFilm, genre FROM film_genres INNER JOIN genres ON idGenre = id WHERE idFilm = %s", (id), True)
@@ -133,63 +158,102 @@ class Castmanu:
             generos_por_pelicula[row["idFilm"]].append(row["genre"])
 
         # Añadir los géneros a cada film
-        film["genres"] = generos_por_pelicula.get(film["id"], [])
+        film["generos"] = generos_por_pelicula.get(film["id"], [])
         film.pop("id")
 
         return film
     
     # Añadir pelicula o elemento
-    async def add_film(self, title, type, sinopsis, poster_format, uploader, capitulo, generos, idExt):
+    async def add_film(self, id, title, type, sinopsis, poster_format, uploader, generos):
         
         admin = await self.isAdmin(uploader)
 
         if not admin["success"]:
             return admin
 
-        if type == "Serie":
-            if (idExt):
-                existe = await self.fetch("SELECT * FROM films WHERE idExt = %s AND capitulo = %s",(idExt, capitulo))
-            else:
-                existe = await self.fetch("SELECT * FROM films WHERE title = %s AND capitulo = %s",(title, capitulo))
-            file = f'https://castmanu.ddns.net/videos/{title}/{capitulo}/master.m3u8'
-        else:
-            if (idExt):
-                existe = await self.fetch("SELECT * FROM films WHERE idExt = %s",(idExt))
-            else:
-                existe = await self.fetch("SELECT * FROM films WHERE title = %s",(title))
-            file = f'https://castmanu.ddns.net/videos/{title}/master.m3u8'
+        existe = await self.fetch("SELECT * FROM films WHERE title = %s AND type = %s",(title, type))
 
         if existe:
             return {"success": False, "message": "Lo que intentas añadir ya existe"}
         
+        file = f'https://castmanu.ddns.net/videos/{type}/{title}'
+
         poster = None
         if poster_format:
             if poster_format.startswith("http"):
                 poster = poster_format
             else:
-                poster = f'https://castmanu.ddns.net/fotos/{title}.{poster_format}'
+                poster = f'https://castmanu.ddns.net/videos/{type}/{title}/poster/{title}.{poster_format}'
 
-        id = await self.fetch("INSERT INTO films(title, type, sinopsis, poster, file, uploader, capitulo, idExt) VALUES(%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",(title, type, sinopsis, poster, file, uploader, capitulo, idExt))
-        if generos:
-            insertGeneros = ""
-            for genero in generos:
-                insertGeneros += f" ({id["id"]}, {self.mapGenero(genero)}),"
-            insertGeneros = insertGeneros[:-1]
-            await self.fetch(f"INSERT INTO film_genres VALUES{insertGeneros}")
-        return {"success": True, "message": "Pelicula añadida", "id": id["id"]}
+        # Iniciar transacción
+        conn, cursor = await self.init_transaction()
+        try:
+            if id:
+                idFetch = await self.add_to_transaction(cursor, "INSERT INTO films(id, title, type, sinopsis, poster, file, uploader) VALUES(%s, %s, %s, %s, %s, %s, %s) RETURNING id",(id, title, type, sinopsis, poster, file, uploader))
+            else:
+                idFetch = await self.add_to_transaction(cursor, "INSERT INTO films(title, type, sinopsis, poster, file, uploader) VALUES(%s, %s, %s, %s, %s, %s) RETURNING id",(title, type, sinopsis, poster, file, uploader))
+            if generos:
+                insertGeneros = ""
+                for genero in generos:
+                    insertGeneros += f" ({idFetch["id"]}, {self.mapGenero(genero)}),"
+                insertGeneros = insertGeneros[:-1]
+                await self.add_to_transaction(cursor, f"INSERT INTO film_genres VALUES{insertGeneros}")
+
+            # Si todo fue bien, confirmamos la transacción
+            await self.finish_transaction(conn)
+            return {"success": True, "message": "Pelicula añadida", "id": idFetch["id"]}
+        except Exception as e:
+            # Si algo falla, revertimos la transacción
+            await self.finish_transaction(conn, commit=False)
+            return {"success": False, "message": f"Error al añadir la película: {e}"}
+        
+    # Añadir capitulo
+    async def add_capitulo(self, idSerie, capitulo, uploader):
+        
+        admin = await self.isAdmin(uploader)
+
+        if not admin["success"]:
+            return admin
+
+        existe = await self.fetch("SELECT * FROM serie_capitulos WHERE idSerie = %s and capitulo = %s",(idSerie, capitulo))
+
+        if existe:
+            return {"success": False, "message": "El capitulo que intentas añadir ya existe"}
+
+        await self.fetch("INSERT INTO serie_capitulos VALUES(%s, %s)",(idSerie, capitulo))
+        return {"success": True, "message": "Capitulo añadido"}
     
     # Eliminar pelicula o elemento
-    async def delete_film(self, id, deleter):
+    async def delete_film(self, id, capitulo, deleter):
 
         admin = await self.isAdmin(deleter)
 
         if not admin["success"]:
             return admin
         
-        await self.fetch("DELETE FROM film_genres WHERE idFilm = %s",(id))
-        await self.fetch("DELETE FROM films WHERE id = %s",(id))
+        if capitulo:
+            datos = await self.fetch("DELETE FROM serie_capitulos WHERE idSerie = %s AND capitulo = %s RETURNING *",(id, capitulo))
+            datos["borrado"] = "capitulo"
+        else:
+            genres_map = await self.fetch("SELECT idFilm, genre FROM film_genres INNER JOIN genres ON idGenre = id WHERE idFilm = %s", (id), True)
+            capitulos_map = await self.fetch("SELECT idSerie, capitulo FROM serie_capitulos WHERE idSerie = %s", (id), True)
 
-        return {"success": True, "message": "Pelicula eliminada"}
+            datos = await self.fetch("DELETE FROM films WHERE id = %s RETURNING *",(id))
+
+            # Agrupamos los géneros por id de película
+            generos_por_pelicula = defaultdict(list)
+            capitulos_por_serie = defaultdict(list)
+            for row in genres_map:
+                generos_por_pelicula[row["idFilm"]].append(row["genre"])
+            for row in capitulos_map:
+                capitulos_por_serie[row["idSerie"]].append(row["capitulo"])
+
+            # Añadir los géneros a cada film
+            datos["generos"] = generos_por_pelicula.get(datos["id"], [])
+            datos["capitulos"] = capitulos_por_serie.get(datos["id"], [])
+            datos["borrado"] = "entero"
+
+        return {"success": True, "message": "Pelicula eliminada", "datos": datos}
     
     def mapGenero(self, genero):
         mapping = {

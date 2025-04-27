@@ -60,13 +60,16 @@ class FilmType(str, Enum):
     otro = "Otro"
 
 class Film(BaseModel):
+    id: Optional[int] = None
     title: str
     type: FilmType
     sinopsis: Optional[str] = None
     poster_format: Optional[str] = None
-    capitulo: Optional[int] = None
     generos: Optional[List[str]] = None
-    idExt: Optional[int] = None
+
+class Capitulo(BaseModel):
+    idSerie: int
+    capitulo: int
 
 # Cierra la pool de conexiones
 @app.on_event("shutdown")
@@ -141,10 +144,10 @@ async def get_all(pagina: int, titulo: Optional[str] = None, tipo: Optional[str]
         raise HTTPException(status_code=500, detail=f"Error de servidor: {e}")
     
 @app.get("/get-film/{id}")
-async def get_film(id: str, Authorize: AuthJWT = Depends()):
+async def get_film(id: int, Authorize: AuthJWT = Depends()):
     try:
         # Verifica que el JWT es válido
-        Authorize.jwt_required()
+        #Authorize.jwt_required()
         
         resultados = await db.get_film(id)
 
@@ -163,7 +166,7 @@ async def add_film(film: Film, Authorize: AuthJWT = Depends()):
         #claims = Authorize.get_raw_jwt()
         #uploader = claims.get("id")
         uploader = 1
-        resultados = await db.add_film(film.title, film.type, film.sinopsis, film.poster_format, uploader, film.capitulo, film.generos, film.idExt)
+        resultados = await db.add_film(film.id, film.title, film.type, film.sinopsis, film.poster_format, uploader, film.generos)
 
         return resultados
 
@@ -172,15 +175,15 @@ async def add_film(film: Film, Authorize: AuthJWT = Depends()):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error de servidor: {e}")
     
-@app.post("/add-film-server")
-async def add_film(film: Film, Authorize: AuthJWT = Depends()):
+@app.post("/add-capitulo")
+async def add_capitulo(capitulo: Capitulo, Authorize: AuthJWT = Depends()):
     try:
         # Verifica que el JWT es válido
         #Authorize.jwt_required()
         #claims = Authorize.get_raw_jwt()
         #uploader = claims.get("id")
         uploader = 1
-        resultados = await db.add_film(film.title, film.type, film.sinopsis, film.poster_format, uploader, film.capitulo, film.generos)
+        resultados = await db.add_capitulo(capitulo.idSerie, capitulo.capitulo, uploader)
 
         return resultados
 
@@ -190,14 +193,14 @@ async def add_film(film: Film, Authorize: AuthJWT = Depends()):
         raise HTTPException(status_code=500, detail=f"Error de servidor: {e}")
     
 @app.delete("/delete-film/{id}")
-async def delete_film(id: str, Authorize: AuthJWT = Depends()):
+async def delete_film(id: int, capitulo: Optional[int] = None, Authorize: AuthJWT = Depends()):
     try:
         # Verifica que el JWT es válido
         #Authorize.jwt_required()
         #claims = Authorize.get_raw_jwt()
         #deleter = claims.get("id")
         deleter = 1
-        resultados = await db.delete_film(id, deleter)
+        resultados = await db.delete_film(id, capitulo, deleter)
 
         return resultados
 
