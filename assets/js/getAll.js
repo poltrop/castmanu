@@ -10,6 +10,7 @@ export async function getAll(){
     let tipo = params.get("tipo");
     let generos = params.getAll("genero");
     let isEliminar = params.get("eliminar");
+    let isEditar = params.get("editar");
 
     let extras = [];
     if (titulo)
@@ -65,6 +66,21 @@ export async function getAll(){
                 else{
                     let eliminarButton = document.getElementById("eliminar");
                     eliminarButton.disabled = false;
+                }
+                // Seleccionar esta
+                event.target.closest('.movie-card').classList.add('ring-4', 'ring-neon-cyan', 'ring-offset-2', 'selected');
+            });
+        } else if (isEditar) {
+            principal = document.createElement("div");
+            principal.id = elemento.id;
+            principal.classList.add("cursor-pointer");
+            principal.addEventListener('click', (event) => {
+                let selected = cards.querySelector('.selected');
+                if (selected)
+                    selected.classList.remove('ring-4', 'ring-neon-cyan', 'ring-offset-2', 'selected');
+                else{
+                    let editarButton = document.getElementById("editar");
+                    editarButton.disabled = false;
                 }
                 // Seleccionar esta
                 event.target.closest('.movie-card').classList.add('ring-4', 'ring-neon-cyan', 'ring-offset-2', 'selected');
