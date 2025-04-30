@@ -42,13 +42,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
     if (params.get("id") || params.get("idExt")){
-        genreOptions.forEach(option => {
-            option.removeEventListener("click", option._handler);
-            delete option._handler; // opcional, limpieza
-        });
+        
         let tituloInput = document.getElementById("titulo");
         tituloInput.value = titulo;
-        tituloInput.disabled = true;
         if (poster){
             let img = document.createElement("img");
             img.src = poster;
@@ -56,14 +52,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             let portadaInput = document.getElementById("portada");
             img.id = "portada";
             portadaInput.insertAdjacentElement("beforebegin",img);
-            portadaInput.remove();
+            portadaInput.classList.remove("mb-4");
+            portadaInput.classList.add("my-4");
         }
         type.value = tipo;
-        type.disabled = true;
         changeGenreList();
         let sinopsisInput = document.getElementById("sinopsis");
         sinopsisInput.value = sinopsis;
-        sinopsisInput.disabled = true;
         generos.forEach(generoSelect => {
             // Buscamos el input con ese valor
             let input = document.querySelector(`.genre-checkbox[value="${generoSelect}"]`);
@@ -75,6 +70,21 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }
             }
         });
+        if (params.get("editar") != "true"){
+            portadaInput.remove();
+            genreOptions.forEach(option => {
+                option.removeEventListener("click", option._handler);
+                delete option._handler; // opcional, limpieza
+            });
+            tituloInput.disabled = true;
+            type.disabled = true;
+            sinopsisInput.disabled = true;
+        } else {
+            let botonSubir = document.getElementById("subir");
+            botonSubir.removeEventListener("click",subir);
+            botonSubir.addEventListener("click",editar);
+            botonSubir.innerText = "Editar";
+        }
     }
 
     function changeGenreList(){
@@ -275,5 +285,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
             window.location.href = `watch.html?id=${idRedirect}`;
         }
+    }
+
+    async function editar(){
+        
     }
 });
