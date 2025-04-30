@@ -31,10 +31,14 @@ class Castmanu:
 
     # Ejecuta una consulta SQL y devuelve los resultados.
     async def fetch(self, query: str, params: tuple = (), multiple: bool = False):
-        async with await self.get_connection() as conn:
+        conn = await self.get_connection()
+        try:
             async with conn.cursor() as cursor:
                 await cursor.execute(query, params)
                 return await cursor.fetchall() if multiple else await cursor.fetchone()
+        finally:
+            self.pool.release(conn)
+            
     
     # Inicia una transaccion
     async def init_transaction(self):
@@ -49,11 +53,13 @@ class Castmanu:
         return await cursor.fetchone()
     
     # Finaliza la transacción (commit o rollback).
-    async def finish_transaction(self, conn, commit=True):
+    async def finish_transaction(self, conn, cursor, commit=True):
         if commit:
             await conn.commit()
         else:
             await conn.rollback()
+        await cursor.close()
+        self.pool.release(conn)
 
     # Cierra el pool de conexiones cuando la aplicación termina.
     async def close_pool(self):
@@ -96,7 +102,6 @@ class Castmanu:
         join_clause = ""
         having_clause = ""
         group_by = ""
-        print(generos)
         
         if generos:
             join_clause = "INNER JOIN film_genres ON IdFilm = id"
@@ -122,8 +127,6 @@ class Castmanu:
         total_paginas = await self.fetch(count_query, tuple(params))
 
         query = f"SELECT id, title, type, poster FROM films {join_clause} {where_sql} {group_by} {having_clause} ORDER BY title LIMIT 20 OFFSET %s"
-        print(query)
-        print(count_query)
         params.append(offset)
         films = await self.fetch(query, tuple(params), True)
 
@@ -200,11 +203,11 @@ class Castmanu:
                 await self.add_to_transaction(cursor, f"INSERT INTO film_genres VALUES{insertGeneros}")
 
             # Si todo fue bien, confirmamos la transacción
-            await self.finish_transaction(conn)
+            await self.finish_transaction(conn, cursor)
             return {"success": True, "message": "Pelicula añadida", "id": idFetch["id"]}
         except Exception as e:
             # Si algo falla, revertimos la transacción
-            await self.finish_transaction(conn, commit=False)
+            await self.finish_transaction(conn, cursor, commit=False)
             return {"success": False, "message": f"Error al añadir la película: {e}"}
         
     # Añadir capitulo

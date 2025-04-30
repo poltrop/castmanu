@@ -19,19 +19,20 @@ URL_TMDB = "https://api.themoviedb.org/3"
 URL_SERVER = "https://castmanu.ddns.net"
 PREPARAMS_TMDB= f"api_key={API_TMDB}&language=es-ES"
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://127.0.0.1:5500", "http://localhost:5500","https://www.castmanu.com"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Configuración del JWT
 class Settings(BaseModel):
     authjwt_secret_key: str = "secretcastmanu"
     authjwt_token_location: set = {"cookies"}
     authjwt_cookie_csrf_protect: bool = False
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://127.0.0.1:5500","https://www.castmanu.com"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 @AuthJWT.load_config
 def get_config():
