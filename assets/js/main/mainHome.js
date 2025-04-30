@@ -27,6 +27,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     let tipo = params.get("tipo");
     let generos = params.getAll("genero");
     let isEliminar = params.get("eliminar");
+    let isEditar = params.get("editar");
 
     if (titulo)
         searchInput.value = titulo;
@@ -55,6 +56,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         eliminarButton.addEventListener("click", eliminar);
 
         let eliminarTitulo = document.querySelector("main > h1");
+        eliminarTitulo.classList.remove("hidden");
+    } else if (isEditar){
+        let editarButton = document.getElementById("editar");
+        editarButton.classList.remove("hidden");
+        editarButton.addEventListener("click", editar);
+
+        let eliminarTitulo = document.querySelector("main > h1:nth-of-type(2)");
         eliminarTitulo.classList.remove("hidden");
     }
 
@@ -146,7 +154,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 return;
             } else if (capitulo == "TODOS")
                 capitulo = "";
-            else
+                else
                 capitulo = "?capitulo=" + capitulo;
         }
         let { isConfirmed } = await Swal.fire({
@@ -225,5 +233,12 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
             window.location.href = 'home.html';
         }
+    }
+
+    function editar(){
+        let cards = document.getElementById("cards");
+        let card = cards.querySelector('.selected');
+        let id = card.id;
+        window.location.href = `rellenar.html?editar=true&id=${id}`;
     }
 });
