@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiPostArchivo, apiDelete } from "../api.js";
+import { apiGet, apiPost, apiPostArchivo, apiDelete, apiPut, apiGetArchivo } from "../api.js";
 import { toggleMenu, initHeader } from "../header.js";
 import { mapGenero, mapGeneroId } from "../mapGeneros.js";
 
@@ -45,15 +45,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         
         let tituloInput = document.getElementById("titulo");
         tituloInput.value = titulo;
+        let portadaInput = document.getElementById("portada");
         if (poster){
             let img = document.createElement("img");
             img.src = poster;
             img.alt = "Portada";
-            let portadaInput = document.getElementById("portada");
             img.id = "portada";
             portadaInput.insertAdjacentElement("beforebegin",img);
             portadaInput.classList.remove("mb-4");
             portadaInput.classList.add("my-4");
+            portadaInput.id = "portadaEditar";
         }
         type.value = tipo;
         changeGenreList();
@@ -288,6 +289,134 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     async function editar(){
+        let tituloInput = document.getElementById("titulo");
+        let portadaEditar = document.getElementById("portadaEditar");
+        let type = document.getElementById("type");
+        let selectedGenres = Array.from(document.querySelectorAll(".genre-checkbox:checked")).map(checkbox => checkbox.value);
+        let sinopsisInput = document.getElementById("sinopsis");
+        let archivo = document.getElementById("archivo");
+        let cambioTitulo, cambioPortada, cambioTipo, cambioGeneros, cambioSinopsis, cambioArchivo;
         
+        if (tituloInput.value.trim() && tituloInput.value != titulo)
+            cambioTitulo = tituloInput.value;
+        
+        if (portadaEditar.files.length > 0)
+            cambioPortada = portadaEditar.files[0].name.split('.').pop().toLowerCase();
+        
+        if (type.value != tipo)
+            cambioTipo = type.value;
+        
+        if (!arraysIguales(selectedGenres, generos)){
+            console.log(selectedGenres);
+            console.log(generos);
+            cambioGeneros = selectedGenres;
+        }
+        
+        if (sinopsisInput.value.trim() && sinopsisInput.value != sinopsis)
+            cambioSinopsis = sinopsisInput.value;
+        
+        if (archivo.files.length > 0)
+            cambioArchivo = true;
+        
+        if (!cambioTitulo && !cambioPortada && !cambioTipo && !cambioGeneros && !cambioSinopsis && !cambioArchivo) {
+            errorMsg.innerText = "Debe haber al menos un cambio para editar";
+            return;
+        }
+        
+        errorMsg.innerText="";
+        let { isConfirmed } = await Swal.fire({
+            title: "Estás seguro de que deseas editarlo?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Si',
+            cancelButtonText: 'No',
+            background: '#1B2A41',
+            color: "#00A8E8",
+        });
+
+        if (isConfirmed){
+            let loading = document.getElementById("loading-spinner");
+            loading.classList.remove("hidden");
+
+            let data = {
+                id: params.get("id")
+            };
+
+            if(cambioTitulo)
+                data.title = cambioTitulo;
+
+            if(cambioTipo)
+                data.type = cambioTipo;
+
+            if(cambioGeneros)
+                data.generos = cambioGeneros;
+
+            if(cambioSinopsis)
+                data.sinopsis = cambioSinopsis;
+
+            if(cambioPortada)
+                data.poster_format = cambioPortada;
+
+            let resultadoDB = await apiPut('http://localhost:8000/edit-film', data);
+
+            if (!resultadoDB.success){
+                errorMsg.innerText = resultadoDB.message;
+                loading.classList.add("hidden");
+                return;
+            }
+
+            if(cambioTitulo){
+                let resultadoTitulo = await apiGetArchivo(`https://castmanu.ddns.net/edit-titulo/${titulo}/${tipo}/${cambioTitulo}`);
+                titulo = cambioTitulo;
+                if (!resultadoTitulo.success){
+                    errorMsg.innerText = resultadoTitulo.message;
+                    loading.classList.add("hidden");
+                    return
+                }
+            }
+
+            if(cambioTipo){
+                let resultadoMover = await apiGetArchivo(`https://castmanu.ddns.net/edit-tipo/${titulo}/${tipo}/${cambioTipo}`);
+                tipo = cambioTipo;
+                if (!resultadoMover.success){
+                    errorMsg.innerText = resultadoMover.message;
+                    loading.classList.add("hidden");
+                    return
+                }
+            }
+
+            if(cambioPortada){
+                let resultadoPortada = await apiPostArchivo(`https://castmanu.ddns.net/editf/${titulo}/${tipo}`, archivo.files[0], archivo.files[0].name);
+                if (!resultadoPortada.success){
+                    errorMsg.innerText = resultadoPortada.message;
+                    loading.classList.add("hidden");
+                    return
+                }
+            }
+
+            if(cambioArchivo){
+                let resultadoVideo = await apiPostArchivo(`https://castmanu.ddns.net/edit/${titulo}/${tipo}`, archivo.files[0], archivo.files[0].name);
+                if (!resultadoVideo.success){
+                    errorMsg.innerText = resultadoVideo.message;
+                    loading.classList.add("hidden");
+                    return
+                }
+            }
+
+            loading.classList.add("hidden");
+            errorMsg.classList.remove("text-red-400");
+            errorMsg.classList.add("text-green-600");
+            errorMsg.innerText = "Editado con éxito!";
+            setTimeout(() => {
+                window.location.href = `watch.html?id=${params.get("id")}`;
+            }, 1000);
+        }
     }
+
+    function arraysIguales(a, b) {
+        if (a.length !== b.length) return false;
+        const sortedA = [...a].map(e => e.trim()).sort();
+        const sortedB = [...b].map(e => e.trim()).sort();
+        return sortedA.every((val, i) => val === sortedB[i]);
+      }
 });
