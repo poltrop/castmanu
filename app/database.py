@@ -258,6 +258,76 @@ class Castmanu:
 
         return {"success": True, "message": "Pelicula eliminada", "datos": datos}
     
+    # Editar pelicula o elemento
+    async def edit_film(self, id, title, type, sinopsis, poster_format, editor, generos):
+
+        admin = await self.isAdmin(editor)
+
+        if not admin["success"]:
+            return admin
+        
+        current = await self.get_film(id)
+        if not current:
+            return {"success": False, "message": "Película no encontrada"}
+
+        # Preparar nuevo poster
+        poster = None
+        new_title = title if title else current["title"]
+        new_type = type if type else current["type"]
+
+        if poster_format is not None:
+            poster = f"https://castmanu.ddns.net/videos/{new_type}/{new_title}/poster/{new_title}.{poster_format}"
+
+        elif current["poster"] and current["poster"].startswith("https://castmanu.ddns.net"):
+            # Poster interno: conservar el nombre del archivo
+            filename = current["poster"].split("/poster/")[-1]
+            if title or type:
+                poster = f"https://castmanu.ddns.net/videos/{new_type}/{new_title}/poster/{filename}"
+
+        # Preparar nuevo file
+        file = f"https://castmanu.ddns.net/videos/{new_type}/{new_title}" if title or type else None
+
+        # Armar diccionario de campos a actualizar
+        fields = {}
+        if title: fields["title"] = title
+        if type: fields["type"] = type
+        if sinopsis: fields["sinopsis"] = sinopsis
+        if poster: fields["poster"] = poster
+        if file: fields["file"] = file
+        fields["uploader"] = editor
+
+
+        # Construir query
+        set_clause = ", ".join([f"{key} = %s" for key in fields])
+        query = f"UPDATE films SET {set_clause} WHERE id = %s"
+
+        params = tuple(fields.values()) + (id,)
+
+        # Iniciar transacción
+        conn, cursor = await self.init_transaction()
+        try:
+            await self.add_to_transaction(cursor, query, params)
+
+            # Parte de generos
+            if generos:
+                await self.add_to_transaction(cursor, "DELETE FROM film_genres WHERE idFilm = %s",(id))
+                insertGeneros = ""
+                for genero in generos:
+                    insertGeneros += f" ({id}, {self.mapGenero(genero)}),"
+                insertGeneros = insertGeneros[:-1]
+                await self.add_to_transaction(cursor, f"INSERT INTO film_genres VALUES{insertGeneros}")
+            
+            print(query)
+            print(f'a{insertGeneros}')
+            print(fields)
+            await self.finish_transaction(conn, cursor)
+            return {"success": True, "message": "Pelicula editada"}
+        
+        except Exception as e:
+            # Si algo falla, revertimos la transacción
+            await self.finish_transaction(conn, cursor, commit=False)
+            return {"success": False, "message": f"Error al editar la película: {e}"}
+    
     def mapGenero(self, genero):
         mapping = {
             "Acción": 1,

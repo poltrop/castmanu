@@ -68,6 +68,14 @@ class Film(BaseModel):
     poster_format: Optional[str] = None
     generos: Optional[List[str]] = None
 
+class Edit(BaseModel):
+    id: int
+    title: Optional[str] = None
+    type: Optional[FilmType] = None
+    sinopsis: Optional[str] = None
+    poster_format: Optional[str] = None
+    generos: Optional[List[str]] = None
+
 class Capitulo(BaseModel):
     idSerie: int
     capitulo: int
@@ -167,7 +175,7 @@ async def add_film(film: Film, Authorize: AuthJWT = Depends()):
         #claims = Authorize.get_raw_jwt()
         #uploader = claims.get("id")
         uploader = 1
-        resultados = await db.add_film(film.id, film.title, film.type, film.sinopsis, film.poster_format, uploader, film.generos)
+        resultados = await db.add_film(film.id, film.title, film.type.value, film.sinopsis, film.poster_format, uploader, film.generos)
 
         return resultados
 
@@ -202,6 +210,23 @@ async def delete_film(id: int, capitulo: Optional[int] = None, Authorize: AuthJW
         #deleter = claims.get("id")
         deleter = 1
         resultados = await db.delete_film(id, capitulo, deleter)
+
+        return resultados
+
+    except HTTPException as e:
+        raise HTTPException(status_code=401, detail="No autorizado")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error de servidor: {e}")
+    
+@app.put("/edit-film")
+async def edit_film(film: Edit, Authorize: AuthJWT = Depends()):
+    try:
+        # Verifica que el JWT es válido
+        #Authorize.jwt_required()
+        #claims = Authorize.get_raw_jwt()
+        #editor = claims.get("id")
+        editor = 1
+        resultados = await db.edit_film(film.id, film.title, film.type.value, film.sinopsis, film.poster_format, editor, film.generos)
 
         return resultados
 
