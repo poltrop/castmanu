@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiPostArchivo, apiDelete, apiPut, apiGetArchivo } from "../api.js";
+import { apiGet, apiPost, apiPostServer, apiDelete, apiPut, apiGetArchivo, apiPatchServer } from "../api.js";
 import { toggleMenu, initHeader } from "../header.js";
 import { mapGenero, mapGeneroId } from "../mapGeneros.js";
 
@@ -133,7 +133,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     async function subir(){
         let titulo = document.getElementById("titulo").value.trim();
         let tipo = type.value;
-        let sinopsis = document.getElementById("sinopsis").value;
+        let sinopsis = document.getElementById("sinopsis").value.trim();
         let poster = document.getElementById("portada");
         let capitulo = document.getElementById("capitulo").value;
         let selectedGenres = Array.from(document.querySelectorAll(".genre-checkbox:checked")).map(checkbox => checkbox.value);
@@ -188,7 +188,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     return
                 }
                 
-                let resultadoVideo = await apiPostArchivo(`https://castmanu.ddns.net/upload/${titulo}/${tipo}${extraCap}`, archivo.files[0], archivo.files[0].name);
+                let resultadoVideo = await apiPostServer(`https://castmanu.ddns.net/upload/${titulo}/${tipo}${extraCap}`, archivo.files[0], archivo.files[0].name);
                 if (!resultadoVideo.success){
                     errorMsg.innerText = resultadoVideo.message;
                     await apiDelete(`http://localhost:8000/delete-film/${params.get("id")}${extraCap}`);
@@ -243,7 +243,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     }
                 }
                 
-                let resultadoVideo = await apiPostArchivo(`https://castmanu.ddns.net/upload/${titulo}/${tipo}${extraCap}`, archivo.files[0], archivo.files[0].name);
+                let resultadoVideo = await apiPostServer(`https://castmanu.ddns.net/upload/${titulo}/${tipo}${extraCap}`, archivo.files[0], archivo.files[0].name);
                 if (!resultadoVideo.success){
                     errorMsg.innerText = resultadoVideo.message;
                     await apiDelete(`http://localhost:8000/delete-film/${resultadoDB.id}`);
@@ -252,7 +252,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }
 
                 if(poster.tagName == "INPUT" && poster.files.length > 0){
-                    let resultadoFoto = await apiPostArchivo(`https://castmanu.ddns.net/uploadf/${titulo}/${tipo}`, poster.files[0], poster.files[0].name);
+                    let resultadoFoto = await apiPostServer(`https://castmanu.ddns.net/uploadf/${titulo}/${tipo}`, poster.files[0], poster.files[0].name);
                     if (!resultadoFoto.success){
                         errorMsg.innerText = resultadoFoto.message;
                         await apiDelete(`http://localhost:8000/delete-film/${resultadoDB.id}`);
@@ -294,11 +294,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         let type = document.getElementById("type");
         let selectedGenres = Array.from(document.querySelectorAll(".genre-checkbox:checked")).map(checkbox => checkbox.value);
         let sinopsisInput = document.getElementById("sinopsis");
-        let archivo = document.getElementById("archivo");
-        let cambioTitulo, cambioPortada, cambioTipo, cambioGeneros, cambioSinopsis, cambioArchivo;
+        let cambioTitulo, cambioPortada, cambioTipo, cambioGeneros, cambioSinopsis;
         
         if (tituloInput.value.trim() && tituloInput.value != titulo)
-            cambioTitulo = tituloInput.value;
+            cambioTitulo = tituloInput.value.trim();
         
         if (portadaEditar.files.length > 0)
             cambioPortada = portadaEditar.files[0].name.split('.').pop().toLowerCase();
@@ -313,12 +312,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
         
         if (sinopsisInput.value.trim() && sinopsisInput.value != sinopsis)
-            cambioSinopsis = sinopsisInput.value;
+            cambioSinopsis = sinopsisInput.value.trim();
         
-        if (archivo.files.length > 0)
-            cambioArchivo = true;
-        
-        if (!cambioTitulo && !cambioPortada && !cambioTipo && !cambioGeneros && !cambioSinopsis && !cambioArchivo) {
+        if (!cambioTitulo && !cambioPortada && !cambioTipo && !cambioGeneros && !cambioSinopsis) {
             errorMsg.innerText = "Debe haber al menos un cambio para editar";
             return;
         }
@@ -358,7 +354,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 data.poster_format = cambioPortada;
 
             let resultadoDB = await apiPut('http://localhost:8000/edit-film', data);
-
             if (!resultadoDB.success){
                 errorMsg.innerText = resultadoDB.message;
                 loading.classList.add("hidden");
@@ -366,40 +361,44 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
 
             if(cambioTitulo){
-                let resultadoTitulo = await apiGetArchivo(`https://castmanu.ddns.net/edit-titulo/${titulo}/${tipo}/${cambioTitulo}`);
+                let resultadoTitulo = await apiPatchServer(`https://castmanu.ddns.net/edit-titulo/${titulo}/${tipo}/${cambioTitulo}`);
                 titulo = cambioTitulo;
                 if (!resultadoTitulo.success){
                     errorMsg.innerText = resultadoTitulo.message;
                     loading.classList.add("hidden");
-                    return
+                    generos = selectedGenres.slice();
+                    sinopsis = sinopsisInput.value.trim();
+                    return;
                 }
             }
 
             if(cambioTipo){
-                let resultadoMover = await apiGetArchivo(`https://castmanu.ddns.net/edit-tipo/${titulo}/${tipo}/${cambioTipo}`);
+                let resultadoMover = await apiPatchServer(`https://castmanu.ddns.net/edit-tipo/${titulo}/${tipo}/${cambioTipo}`); // SOLO FALTA POR TERMINAR ESTE ENDPOINT, AUNQUE YA ESTA DEFINIDO
                 tipo = cambioTipo;
                 if (!resultadoMover.success){
                     errorMsg.innerText = resultadoMover.message;
                     loading.classList.add("hidden");
-                    return
+                    generos = selectedGenres.slice();
+                    sinopsis = sinopsisInput.value.trim();
+                    if(cambioTitulo)
+                        titulo = tituloInput.value.trim();
+                    return;
                 }
             }
 
             if(cambioPortada){
-                let resultadoPortada = await apiPostArchivo(`https://castmanu.ddns.net/editf/${titulo}/${tipo}`, archivo.files[0], archivo.files[0].name);
+                let resultadoPortada = await apiPostServer(`https://castmanu.ddns.net/uploadf/${titulo}/${tipo}`, archivo.files[0], archivo.files[0].name);
                 if (!resultadoPortada.success){
                     errorMsg.innerText = resultadoPortada.message;
+                    errorMsg.innerText += ". El resto de cambios han sido aplicados";
                     loading.classList.add("hidden");
-                    return
-                }
-            }
-
-            if(cambioArchivo){
-                let resultadoVideo = await apiPostArchivo(`https://castmanu.ddns.net/edit/${titulo}/${tipo}`, archivo.files[0], archivo.files[0].name);
-                if (!resultadoVideo.success){
-                    errorMsg.innerText = resultadoVideo.message;
-                    loading.classList.add("hidden");
-                    return
+                    generos = selectedGenres.slice();
+                    sinopsis = sinopsisInput.value.trim();
+                    if(cambioTitulo)
+                        titulo = tituloInput.value.trim();
+                    if(cambioTipo)
+                        tipo = type.value;
+                    return;
                 }
             }
 
