@@ -1,4 +1,4 @@
-import { apiDelete, apiDeleteArchivo, apiPost } from "../api.js";
+import { apiDelete, apiDeleteServer, apiPost } from "../api.js";
 import { getAll } from "../getAll.js";
 import { toggleMenu, initHeader } from "../header.js";
 
@@ -179,7 +179,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 return
             }
             
-            let resultadoVideo = await apiDeleteArchivo(`https://castmanu.ddns.net/delete/${title}/${type}${capitulo}`);
+            let resultadoVideo = await apiDeleteServer(`https://castmanu.ddns.net/delete/${title}/${type}${capitulo}`);
             if (!resultadoVideo.success){
                 let datos;
                 if (resultadoDB.datos.borrado == "entero"){

@@ -69,9 +69,9 @@ export async function apiDelete(url, params = {}) {
     return await httpRequest("DELETE", url, params);
 }
 
-export async function apiGetArchivo(url) {
+export async function apiPatchServer(url) {
     const response = await fetch(url, {
-        method: "GET",
+        method: "PATCH",
         headers: {
             "Authorization": "Bearer castmanu"
         }
@@ -85,7 +85,7 @@ export async function apiGetArchivo(url) {
     return await response.json();
 }
 
-export async function apiPostArchivo(url, archivo, nombre) {
+export async function apiPostServer(url, archivo, nombre) {
     const formData = new FormData();
     formData.append("file", archivo, nombre);
 
@@ -105,7 +105,7 @@ export async function apiPostArchivo(url, archivo, nombre) {
     return await response.json();
 }
 
-export async function apiDeleteArchivo(url) {
+export async function apiDeleteServer(url) {
     const response = await fetch(url, {
         method: "DELETE",
         headers: {
