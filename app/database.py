@@ -275,6 +275,11 @@ class Castmanu:
         new_title = title if title else current["title"]
         new_type = type if type else current["type"]
 
+        if title or type:
+            existe = await self.fetch("SELECT * FROM films WHERE title = %s AND type = %s", (new_title, new_type))
+            if existe:
+                return {"success": False, "message": "El titulo + tipo al que intentas cambiar ya existe. Por favor elige otro"}
+
         if poster_format is not None:
             poster = f"https://castmanu.ddns.net/videos/{new_type}/{new_title}/poster/{new_title}.{poster_format}"
 
