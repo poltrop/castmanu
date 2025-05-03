@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiPostServer, apiDelete, apiPut, apiGetArchivo, apiPatchServer } from "../api.js";
+import { apiGet, apiPost, apiPostServer, apiDelete, apiPut, apiPatchServer } from "../api.js";
 import { toggleMenu, initHeader } from "../header.js";
 import { mapGenero, mapGeneroId } from "../mapGeneros.js";
 
@@ -51,6 +51,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             img.src = poster;
             img.alt = "Portada";
             img.id = "portada";
+            img.classList.add('w-full', 'max-w-[600px]', 'h-auto', 'object-cover');
             portadaInput.insertAdjacentElement("beforebegin",img);
             portadaInput.classList.remove("mb-4");
             portadaInput.classList.add("my-4");
@@ -72,7 +73,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
         });
         if (params.get("editar") != "true"){
-            portadaInput.remove();
+            if (poster)
+                portadaInput.remove();
             genreOptions.forEach(option => {
                 option.removeEventListener("click", option._handler);
                 delete option._handler; // opcional, limpieza
@@ -85,6 +87,20 @@ document.addEventListener("DOMContentLoaded", async () => {
             botonSubir.removeEventListener("click",subir);
             botonSubir.addEventListener("click",editar);
             botonSubir.innerText = "Editar";
+            if (type.value == "Serie")
+                type.disabled = true;
+            else{
+                let opcionSerie = type.querySelector('option[value="Serie"]');
+                opcionSerie.remove();
+            }
+            let labelCap = document.getElementById("labelCap");
+            let capitulo = document.getElementById("capitulo");
+            let archivo = document.getElementById("archivo");
+            let labelArchivo = archivo.previousElementSibling;
+            labelCap.remove();
+            capitulo.remove();
+            archivo.remove();
+            labelArchivo.remove();
         }
     }
 
@@ -95,8 +111,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         let serieGenres = document.querySelectorAll('.genre-container .serie-genre');
         let labelCap = document.getElementById("labelCap");
         let capitulo = document.getElementById("capitulo");
-        labelCap.classList.add("hidden");
-        capitulo.classList.add("hidden");
+        if (params.get("editar") != "true"){
+            labelCap.classList.add("hidden");
+            capitulo.classList.add("hidden");
+        }
         
         // Mostrar todos
         allLabels.forEach(label => label.classList.remove('hidden'));
@@ -168,6 +186,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if(isConfirmed){
             let loading = document.getElementById("loading-spinner");
             loading.classList.remove("hidden");
+            let resultadoDB;
             if (params.get("id")){
                 if (tipo != "Serie"){
                     errorMsg.innerText = "Solo se pueden añadir capitulos de series desde esta sección";
@@ -220,7 +239,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 if(poster_format)
                     data.poster_format = poster_format;
                 
-                let resultadoDB = await apiPost('http://localhost:8000/add-film', data);
+                resultadoDB = await apiPost('http://localhost:8000/add-film', data);
                 
                 if (!resultadoDB.success){
                     errorMsg.innerText = resultadoDB.message;
@@ -255,9 +274,12 @@ document.addEventListener("DOMContentLoaded", async () => {
                     let resultadoFoto = await apiPostServer(`https://castmanu.ddns.net/uploadf/${titulo}/${tipo}`, poster.files[0], poster.files[0].name);
                     if (!resultadoFoto.success){
                         errorMsg.innerText = resultadoFoto.message;
-                        await apiDelete(`http://localhost:8000/delete-film/${resultadoDB.id}`);
-                        loading.classList.add("hidden");
-                        return
+                        errorMsg.innerText += ". Se pondra la foto por defecto. Editalo para modificarlo";
+                        let data = {
+                            id: resultadoDB.id,
+                            poster_format: "delete",
+                        };
+                        await apiPut(`http://localhost:8000/edit-film`, data);
                     }
                 }
             }
@@ -284,7 +306,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                     return;
                 }
             }
-            window.location.href = `watch.html?id=${idRedirect}`;
+            setTimeout(() => {
+                window.location.href = `watch.html?id=${idRedirect}`;
+            }, 1000);
         }
     }
 
@@ -302,8 +326,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (portadaEditar.files.length > 0)
             cambioPortada = portadaEditar.files[0].name.split('.').pop().toLowerCase();
         
-        if (type.value != tipo)
+        if (type.value != tipo){
+            if (tipo == "Serie"){ // Esto previene que si algun listillo quita el disabled no me la lie por detras
+                errorMsg.innerText = "No puedes cambiar el tipo de serie a otra cosa";
+                return;
+            }
             cambioTipo = type.value;
+        }
         
         if (!arraysIguales(selectedGenres, generos)){
             console.log(selectedGenres);
@@ -373,7 +402,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
 
             if(cambioTipo){
-                let resultadoMover = await apiPatchServer(`https://castmanu.ddns.net/edit-tipo/${titulo}/${tipo}/${cambioTipo}`); // SOLO FALTA POR TERMINAR ESTE ENDPOINT, AUNQUE YA ESTA DEFINIDO
+                let resultadoMover = await apiPatchServer(`https://castmanu.ddns.net/edit-tipo/${titulo}/${tipo}/${cambioTipo}`);
                 tipo = cambioTipo;
                 if (!resultadoMover.success){
                     errorMsg.innerText = resultadoMover.message;
@@ -387,7 +416,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
 
             if(cambioPortada){
-                let resultadoPortada = await apiPostServer(`https://castmanu.ddns.net/uploadf/${titulo}/${tipo}`, archivo.files[0], archivo.files[0].name);
+                let resultadoPortada = await apiPostServer(`https://castmanu.ddns.net/uploadf/${titulo}/${tipo}`, portadaEditar.files[0], portadaEditar.files[0].name);
                 if (!resultadoPortada.success){
                     errorMsg.innerText = resultadoPortada.message;
                     errorMsg.innerText += ". El resto de cambios han sido aplicados";
