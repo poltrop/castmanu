@@ -95,45 +95,45 @@ def process_file(input_file):
         tipo, file_base = extraerTipo(file_base)
         capitulo, file_base = comprobarCapitulo(file_base)
         
-        final_folder = os.path.join(video_folder, tipo)
-        os.chdir(final_folder)
-        os.chdir(file_base)
+        final_folder = os.path.join(video_folder, tipo, file_base)
         if capitulo:
-            os.chdir(capitulo)
-        if os.path.exists("segment_000_0.ts"): # Esto evita que se duplique el trabajo en caso de que haya habido algun fallo y el user haya intentado resubirlo
+            final_folder = os.path.join(final_folder, capitulo)
+        if os.path.exists(os.path.join(final_folder, "segment_000_0.ts")): # Esto evita que se duplique el trabajo en caso de que haya habido algun fallo y el user haya intentado resubirlo
             return
         # EN ESTE PUNTO ESTAMOS DENTRO DE LA CARPETA DEL NUEVO VIDEO
         logger.info("Comenzando transformacion")
         # Comando FFmpeg
-        comando_info = f"ffprobe -loglevel quiet -print_format json -show_streams '{input_file}'"
+        comando_info = f'ffprobe -loglevel quiet -print_format json -show_streams "{input_file}"'
         info = subprocess.check_output(comando_info, shell=True)
         info = json.loads(info)
 
         contador_subs=0
         lengua_subs=[]
-        comando_subs = f"ffmpeg -loglevel quiet -i '{input_file}'"
+        comando_subs = f'ffmpeg -loglevel quiet -i "{input_file}"'
+        subs_folder = ""
         for stream in info.get("streams"):
             if stream.get("codec_type") == "subtitle":
                 if contador_subs == 0:
-                    os.mkdir("subs")
-                comando_subs += f' -map 0:s:{contador_subs} subs/subs_{contador_subs}.vtt'
+                    os.mkdir(os.path.join(final_folder, "subs"))
+                    subs_folder = os.path.join(final_folder, "subs")
+                comando_subs += f' -map 0:s:{contador_subs} "{os.path.join(subs_folder, "subs_{contador_subs}.vtt")}"'
                 lengua_subs.append(stream.get("title") or elegir_idioma(stream.get("language") or stream.get("tags").get("language"),contador_subs))
                 contador_subs += 1
 
         comando_subs += f' -c:s webvtt'
-        #print(comando)
+        #logger.info(comando_subs)
         subprocess.run(comando_subs, shell=True)
         if contador_subs != 0:
-            with open("subs/languages.txt", "w") as file:
+            with open(os.path.join(subs_folder, "languages.txt"), "w") as file:
                 for lengua in lengua_subs:
-                    file.write(f"{lengua}\n")  # Agrega cada línea al final del archivo
+                    file.write(f'{lengua}\n')  # Agrega cada línea al final del archivo
 
         # Contador para nombrar las pistas de audio
         contador_audio = 0
         bitrate_aud = "320k" # Le ponemos este valor por defecto por si algo falla
         lengua_audios = [] # Lo usamos luego para modificar el master
         # Constructor del megacomando ffmpeg
-        comando = f"ffmpeg -loglevel quiet -hwaccel cuda -i '{input_file}'"
+        comando = f'ffmpeg -loglevel quiet -hwaccel cuda -i "{input_file}"'
         # Recorrer las pistas de audio y generar los comandos
         for stream in info.get("streams"):
             if stream.get("codec_type") == "video":
@@ -147,18 +147,19 @@ def process_file(input_file):
                     comando += f' -map 0:a:{contador_audio} -c:a:{contador_audio} aac -b:a:{contador_audio} {bitrate_audio(stream.get("channels"))} -ar 48000 -ac {stream.get("channels")}'
                 else:
                     comando += f' -map 0:a:{contador_audio} -c:a:{contador_audio} copy'
-                lengua_audios.append(stream.get("title") or elegir_idioma(stream.get("language") or stream.get("tags").get("language"),contador_audio))
+                lengua_audios.append(stream.get("title") or elegir_idioma(stream.get("language") or stream.get("tags").get("language"), contador_audio))
                 contador_audio += 1
 
-        comando += f' -hls_time 10 -hls_playlist_type vod -hls_segment_filename "segment_%03d_%v.ts" -var_stream_map "v:0,agroup:aud'
+        comando += f' -hls_time 10 -hls_playlist_type vod -hls_segment_filename "{os.path.join(final_folder, "segment_%03d_%v.ts")}" -var_stream_map "v:0,agroup:aud'
         for index,audio in enumerate(lengua_audios):
             comando += f' a:{index},agroup:aud,{"default:yes," if index == 0 else ""}name:{audio}'
-        comando += f'" -f hls -y -hls_flags independent_segments -hls_list_size 0 -master_pl_name master.m3u8 playlist_%v.m3u8'
+        comando += f'" -f hls -y -hls_flags independent_segments -hls_list_size 0 -master_pl_name "master.m3u8" "{os.path.join(final_folder, "playlist_%v.m3u8")}"'
         # Ejecutar el comando HLS
-        #print(comando)
+        #logger.info(comando)
         subprocess.run(comando, shell=True)
 
-        with open("master.m3u8", "r", encoding="utf-8") as f:
+        lineas = ""
+        with open(os.path.join(final_folder, "master.m3u8"), "r", encoding="utf-8") as f:
             lineas = f.readlines()
 
         nuevas_lineas = []
@@ -170,7 +171,7 @@ def process_file(input_file):
                 contador += 1
             nuevas_lineas.append(linea)
 
-        with open("master.m3u8", "w", encoding="utf-8") as f:
+        with open(os.path.join(final_folder, "master.m3u8"), "w", encoding="utf-8") as f:
             f.writelines(nuevas_lineas)
 
         os.remove(input_file)
