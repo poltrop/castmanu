@@ -226,7 +226,7 @@ async def edit_film(film: Edit, Authorize: AuthJWT = Depends()):
         #claims = Authorize.get_raw_jwt()
         #editor = claims.get("id")
         editor = 1
-        resultados = await db.edit_film(film.id, film.title, film.type.value, film.sinopsis, film.poster_format, editor, film.generos)
+        resultados = await db.edit_film(film.id, film.title, film.type.value if film.type else film.type, film.sinopsis, film.poster_format, editor, film.generos)
 
         return resultados
 
