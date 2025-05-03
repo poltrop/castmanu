@@ -280,9 +280,10 @@ class Castmanu:
             if existe:
                 return {"success": False, "message": "El titulo + tipo al que intentas cambiar ya existe. Por favor elige otro"}
 
-        if poster_format is not None:
+        if poster_format == "delete":
+            poster = "delete"
+        elif poster_format is not None:
             poster = f"https://castmanu.ddns.net/videos/{new_type}/{new_title}/poster/{new_title}.{poster_format}"
-
         elif current["poster"] and current["poster"].startswith("https://castmanu.ddns.net"):
             # Poster interno: conservar el nombre del archivo
             filename = current["poster"].split("/poster/")[-1]
@@ -297,7 +298,10 @@ class Castmanu:
         if title: fields["title"] = title
         if type: fields["type"] = type
         if sinopsis: fields["sinopsis"] = sinopsis
-        if poster: fields["poster"] = poster
+        if poster == "delete":
+            fields["poster"] = None
+        elif poster:
+            fields["poster"] = poster
         if file: fields["file"] = file
         fields["uploader"] = editor
 
@@ -314,17 +318,15 @@ class Castmanu:
             await self.add_to_transaction(cursor, query, params)
 
             # Parte de generos
-            if generos:
+            if generos == [] or generos:
                 await self.add_to_transaction(cursor, "DELETE FROM film_genres WHERE idFilm = %s",(id))
                 insertGeneros = ""
                 for genero in generos:
                     insertGeneros += f" ({id}, {self.mapGenero(genero)}),"
                 insertGeneros = insertGeneros[:-1]
-                await self.add_to_transaction(cursor, f"INSERT INTO film_genres VALUES{insertGeneros}")
+                if insertGeneros:
+                    await self.add_to_transaction(cursor, f"INSERT INTO film_genres VALUES{insertGeneros}")
             
-            print(query)
-            print(f'a{insertGeneros}')
-            print(fields)
             await self.finish_transaction(conn, cursor)
             return {"success": True, "message": "Pelicula editada"}
         
