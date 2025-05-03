@@ -1,5 +1,5 @@
 import shutil
-from flask import Flask, request, abort, jsonify
+from flask import Flask, request, abort
 from PIL import Image
 from io import BytesIO
 import os
@@ -11,39 +11,39 @@ UPLOAD_FOLDER = "/media/tmp"
 VIDEOS_FOLDER = "/media/videos"
 FOTOS_FOLDER = "/media/fotos"
 API_KEY = "castmanu"  # cámbialo por lo que quieras
+MAX_IMAGE_SIZE = 10 * 1024 * 1024  # 10 MB
 
 def check_auth():
     auth = request.headers.get("Authorization", "")
     if not auth.startswith("Bearer ") or auth.split(" ", 1)[1] != API_KEY:
         abort(401)
 
-@app.route("/upload/<new_name>/<tipo>", methods=["POST"])
-def upload(new_name, tipo):
+@app.route("/upload/<titulo>/<tipo>", methods=["POST"])
+def upload(titulo, tipo):
     check_auth()
     if 'file' not in request.files:
         return {"success": False, "message": "No se ha enviado archivo"}
     file = request.files['file']
-    if not is_video(file):
-        return {"success": False, "message": "El archivo no es un video válido"}
-    filename = new_name + os.path.splitext(file.filename)[1]
+    filename = titulo + os.path.splitext(file.filename)[1]
     path = os.path.join(VIDEOS_FOLDER, tipo)
-    os.chdir(path)
-    if not os.path.exists(new_name):
-        os.mkdir(new_name)
-    os.chdir(new_name)
-    extraCap = request.args.get("capitulo")
-    if extraCap:
-        if not os.path.exists(extraCap):
-            os.mkdir(extraCap)
-        os.chdir(extraCap)
-        filename = f"***{extraCap}***" + filename
+    if not os.path.exists(os.path.join(path, titulo)):
+        os.mkdir(os.path.join(path, titulo))
+    path = os.path.join(path, titulo)
+    capitulo = request.args.get("capitulo")
+    if capitulo:
+        if not os.path.exists(os.path.join(path, capitulo)):
+            os.mkdir(os.path.join(path, capitulo))
+        filename = f"***{capitulo}***" + filename
     filename = f'^^^{tipo}^^^' + filename
     path = os.path.join(UPLOAD_FOLDER, filename)
     file.save(path)
+    if not is_video(path):
+        os.remove(path)
+        return {"success": False, "message": "El archivo no es un video válido"}
     return {"success": True, "message": "Subido con éxito"}
 
-@app.route("/uploadf/<new_name>/<tipo>", methods=["POST"])
-def uploadf(new_name, tipo):
+@app.route("/uploadf/<titulo>/<tipo>", methods=["POST"])
+def uploadf(titulo, tipo):
     check_auth()
     if 'file' not in request.files:
         return {"success": False, "message": "No se ha enviado archivo"}
@@ -51,21 +51,23 @@ def uploadf(new_name, tipo):
     # Verifica si el archivo es una imagen antes de guardarlo
     if not is_image(file):
         return {"success": False, "message": "El archivo no es una imagen válida"}
-    path = os.path.join(VIDEOS_FOLDER, tipo)
-    os.chdir(path)
-    os.chdir(new_name)
-    if not os.path.exists("poster"):
-        os.mkdir("poster")
-    os.chdir("poster")
-    filename = new_name + os.path.splitext(file.filename)[1]
-    path = os.path.join(os.getcwd(), filename)
+    path = os.path.join(VIDEOS_FOLDER, tipo, titulo)
+    if not os.path.exists(os.path.join(path, "poster")):
+        os.mkdir(os.path.join(path, "poster"))
+    path = os.path.join(path, "poster")
+    for f in os.listdir(path): # Borramos la foto de dentro si es que la hay
+        file_path = os.path.join(path, f)
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+    filename = titulo + os.path.splitext(file.filename)[1]
+    path = os.path.join(path, filename)
     file.save(path)
     return {"success": True, "message": "Subido con éxito"}
 
-@app.route("/delete/<filename>/<tipo>", methods=["DELETE"])
-def delete(filename, tipo):
+@app.route("/delete/<titulo>/<tipo>", methods=["DELETE"])
+def delete(titulo, tipo):
     check_auth()
-    path = os.path.join(VIDEOS_FOLDER, tipo, filename)
+    path = os.path.join(VIDEOS_FOLDER, tipo, titulo)
     capitulo = request.args.get("capitulo")
     if capitulo:
         path = os.path.join(path, capitulo)
@@ -77,26 +79,38 @@ def delete(filename, tipo):
         return {"success": False, "message": f"Error al borrar: {str(e)}"}
     return {"success": True, "message": "Borrado con éxito"}
 
-@app.route("/modify/<filename>", methods=["PATCH"])
-def rename(filename):
+@app.route("/edit-titulo/<titulo>/<tipo>/<cambioTitulo>", methods=["PATCH"])
+def edit_titulo(titulo, tipo, cambioTitulo):
     check_auth()
-    new_name = request.args.get("new") # Tengo que encargarme de meterle el new_name como queryparam, y ademas meterle el .mp4 antes de enviarlo
-    if not new_name:
-        return "Missing 'new' param", 400
-    old_path = os.path.join(VIDEOS_FOLDER, filename)
-    new_path = os.path.join(VIDEOS_FOLDER, new_name)
+    path_antiguo = os.path.join(VIDEOS_FOLDER, tipo, titulo)
+    path_nuevo = os.path.join(VIDEOS_FOLDER, tipo, cambioTitulo)
+    if not os.path.exists(path_antiguo):
+        return {"success": False, "message": "No se encuentra el archivo"}
+    os.rename(path_antiguo, path_nuevo)
+    return {"success": True, "message": "Titulo modificado con éxito"}
+
+@app.route("/edit-tipo/<titulo>/<tipo>/<cambioTipo>", methods=["PATCH"])
+def edit_tipo(titulo, tipo, cambioTipo):
+    check_auth()
+    old_path = os.path.join(VIDEOS_FOLDER, tipo, titulo)
+    new_path = os.path.join(VIDEOS_FOLDER, cambioTipo, titulo)
     if not os.path.exists(old_path):
         return {"success": False, "message": "No se encuentra el archivo"}
-    os.rename(old_path, new_path)
-    return {"success": True, "message": "Modificado con éxito"}
+    shutil.move(old_path, new_path)
+    return {"success": True, "message": "Tipo modificado con éxito"}
 
-@app.route("/getSubLanguages/<file>", methods=["GET"])
-def getSubLanguages(file):
+@app.route("/getSubLanguages/<titulo>/<tipo>", methods=["GET"])
+def getSubLanguages(titulo, tipo):
     check_auth()
-    languages = os.path.join(VIDEOS_FOLDER,file,"subs/languages.txt")
+    capitulo = request.args.get("capitulo")
+    if capitulo:
+        languages = os.path.join(VIDEOS_FOLDER, tipo, titulo, "subs", "languages.txt")
+    else:
+        languages = os.path.join(VIDEOS_FOLDER, tipo, titulo, capitulo, "subs", "languages.txt")
     if not os.path.exists(languages):
         return {"success": False, "message": "No existen subtitulos para este archivo"}
     # Abre el archivo en modo lectura
+    lines = ""
     with open(languages, "r", encoding="utf-8") as file_subs:
         # Lee todas las líneas del archivo y las guarda en una lista
         lines = file_subs.readlines()
@@ -104,25 +118,17 @@ def getSubLanguages(file):
     return {"success": True, "message": "Subtitulos obtenido con éxito", "languages": lines}
 
 
-def is_video(file):
-    """Verifica si el archivo es un video utilizando ffprobe sin cargar el archivo entero en memoria."""
+def is_video(file_path):
     try:
-        
-        # Usamos un subprocess para pasar el archivo sin necesidad de leerlo todo en memoria
         command = [
-            "ffprobe", "-v", "error", "-show_streams", "-select_streams", "v:0", "-i", "pipe:0"
+            "ffprobe", "-v", "error",
+            "-select_streams", "v:0",
+            "-show_entries", "stream=codec_type",
+            "-of", "default=noprint_wrappers=1:nokey=1",
+            file_path
         ]
-        
-        # Ejecutamos el comando con el archivo pasado directamente. 20MB
-        result = subprocess.run(command, input=file.read(20 * 1024 * 1024), stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # Lee solo los primeros 4KB del archivo
-
-        # Si el comando ffprobe encuentra un flujo de video, consideramos que es un video
-        if result.returncode == 0 and result.stdout:
-            # Regresa el puntero al inicio del archivo
-            file.seek(0)
-            return True
-        else:
-            return False
+        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        return "video" in result.stdout.lower()
     except Exception as e:
         print(f"Error al verificar el archivo: {e}")
         return False
@@ -130,8 +136,14 @@ def is_video(file):
 def is_image(file):
     """Verifica si el archivo es una imagen utilizando Pillow."""
     try:
+        file.seek(0, os.SEEK_END)
+        size = file.tell()
+        file.seek(0)
+        if size > MAX_IMAGE_SIZE:
+            print("Archivo demasiado grande para ser imagen.")
+            return False
         # Intenta abrir el archivo como una imagen en memoria
-        image = Image.open(BytesIO(file.read()))
+        image = Image.open(file)
         image.verify()  # Verifica si es una imagen válida
         file.seek(0)
         return True
