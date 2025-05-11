@@ -69,6 +69,22 @@ export async function apiDelete(url, params = {}) {
     return await httpRequest("DELETE", url, params);
 }
 
+export async function apiGetServer(url) {
+    const response = await fetch(url, {
+        method: "Get",
+        headers: {
+            "Authorization": "Bearer castmanu"
+        }
+    });
+
+    if (!response.ok) {
+        const errorText = await response.json();
+        throw new Error(`Error ${response.status}: ${errorText}`);
+    }
+
+    return await response.json();
+}
+
 export async function apiPatchServer(url) {
     const response = await fetch(url, {
         method: "PATCH",
