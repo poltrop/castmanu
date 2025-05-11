@@ -60,7 +60,7 @@ def bitrate_audio(canales):
         case _: #Esto es el default
             return "320k"
         
-def elegir_idioma(idioma,indice):
+def elegir_idioma(idioma, indice):
     match idioma:
         case "spa":
             return "Español"
@@ -70,6 +70,36 @@ def elegir_idioma(idioma,indice):
             return "Catalán"
         case "glg":
             return "Gallego"
+        case "fra":
+            return "Francés"
+        case "deu":
+            return "Alemán"
+        case "ita":
+            return "Italiano"
+        case "por":
+            return "Portugués"
+        case "eus" | "baq":
+            return "Euskera"
+        case "rus":
+            return "Ruso"
+        case "jpn":
+            return "Japonés"
+        case "zho" | "chi":
+            return "Chino"
+        case "ara":
+            return "Árabe"
+        case "hin":
+            return "Hindi"
+        case "kor":
+            return "Coreano"
+        case "nld" | "dut":
+            return "Neerlandés"
+        case "swe":
+            return "Sueco"
+        case "pol":
+            return "Polaco"
+        case "tur":
+            return "Turco"
         case _:
             return f"Idioma_{indice+1}"
 
@@ -132,6 +162,7 @@ def process_file(input_file):
         contador_audio = 0
         bitrate_aud = "320k" # Le ponemos este valor por defecto por si algo falla
         lengua_audios = [] # Lo usamos luego para modificar el master
+        contador_idiomas = {} # Para los casos en que se repitan
         # Constructor del megacomando ffmpeg
         comando = f'ffmpeg -loglevel quiet -hwaccel cuda -i "{input_file}"'
         # Recorrer las pistas de audio y generar los comandos
@@ -147,7 +178,13 @@ def process_file(input_file):
                     comando += f' -map 0:a:{contador_audio} -c:a:{contador_audio} aac -b:a:{contador_audio} {bitrate_audio(stream.get("channels"))} -ar 48000 -ac {stream.get("channels")}'
                 else:
                     comando += f' -map 0:a:{contador_audio} -c:a:{contador_audio} copy'
-                lengua_audios.append(stream.get("title") or elegir_idioma(stream.get("language") or stream.get("tags").get("language"), contador_audio))
+                idioma = stream.get("title") or elegir_idioma(stream.get("language") or stream.get("tags").get("language"), contador_audio)
+                if idioma in lengua_audios:
+                    contador_idiomas[idioma] += 1
+                    lengua_audios.append(f'{idioma} {contador_idiomas[idioma]}')
+                else:
+                    contador_idiomas[idioma] = 1
+                    lengua_audios.append(idioma)
                 contador_audio += 1
 
         comando += f' -hls_time 10 -hls_playlist_type vod -hls_segment_filename "{os.path.join(final_folder, "segment_%03d_%v.ts")}" -var_stream_map "v:0,agroup:aud'
