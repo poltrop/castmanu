@@ -1,7 +1,6 @@
 import shutil
 from flask import Flask, request, abort
 from PIL import Image
-from io import BytesIO
 import os
 import subprocess
 
@@ -25,21 +24,26 @@ def upload(titulo, tipo):
         return {"success": False, "message": "No se ha enviado archivo"}
     file = request.files['file']
     filename = titulo + os.path.splitext(file.filename)[1]
-    path = os.path.join(VIDEOS_FOLDER, tipo)
-    if not os.path.exists(os.path.join(path, titulo)):
-        os.mkdir(os.path.join(path, titulo))
-    path = os.path.join(path, titulo)
+    path = os.path.join(VIDEOS_FOLDER, tipo, titulo)
+    if not os.path.exists(path):
+        os.mkdir(path)
     capitulo = request.args.get("capitulo")
     if capitulo:
-        if not os.path.exists(os.path.join(path, capitulo)):
-            os.mkdir(os.path.join(path, capitulo))
+        path = os.path.join(path, capitulo)
+        if not os.path.exists(path):
+            os.mkdir(path)
         filename = f"***{capitulo}***" + filename
     filename = f'^^^{tipo}^^^' + filename
-    path = os.path.join(UPLOAD_FOLDER, filename)
+    path = os.path.join(path, "original")
+    if not os.path.exists(path):
+        os.mkdir(path)
+    path = os.path.join(path, 'original' + os.path.splitext(file.filename)[1])
     file.save(path)
     if not is_video(path):
         os.remove(path)
         return {"success": False, "message": "El archivo no es un video válido"}
+    path_transformado = os.path.join(UPLOAD_FOLDER, filename)
+    shutil.copy(path, path_transformado)
     return {"success": True, "message": "Subido con éxito"}
 
 @app.route("/uploadf/<titulo>/<tipo>", methods=["POST"])
@@ -103,10 +107,11 @@ def edit_tipo(titulo, tipo, cambioTipo):
 def getSubLanguages(titulo, tipo):
     check_auth()
     capitulo = request.args.get("capitulo")
+    languages = ""
     if capitulo:
-        languages = os.path.join(VIDEOS_FOLDER, tipo, titulo, "subs", "languages.txt")
-    else:
         languages = os.path.join(VIDEOS_FOLDER, tipo, titulo, capitulo, "subs", "languages.txt")
+    else:
+        languages = os.path.join(VIDEOS_FOLDER, tipo, titulo, "subs", "languages.txt")
     if not os.path.exists(languages):
         return {"success": False, "message": "No existen subtitulos para este archivo"}
     # Abre el archivo en modo lectura
