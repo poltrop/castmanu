@@ -5,7 +5,8 @@ CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
-    admin BOOLEAN DEFAULT FALSE NOT NULL
+    admin BOOLEAN DEFAULT FALSE NOT NULL,
+    volume DOUBLE
 );
 CREATE TABLE IF NOT EXISTS films (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -14,13 +15,15 @@ CREATE TABLE IF NOT EXISTS films (
     sinopsis TEXT,
     poster VARCHAR(255),
     file VARCHAR(255) UNIQUE NOT NULL,
+    extensionOriginal VARCHAR(255),
     uploader INT,
     UNIQUE (title, type),
-    FOREIGN KEY (uploader) REFERENCES users(id)
+    FOREIGN KEY (uploader) REFERENCES users(id) ON DELETE SET NULL
 );
 CREATE TABLE IF NOT EXISTS serie_capitulos (
     idSerie INT,
     capitulo INT,
+    extensionOriginal VARCHAR(255) NOT NULL,
     PRIMARY KEY (idSerie, capitulo),
     FOREIGN KEY (idSerie) REFERENCES films(id) ON DELETE CASCADE
 );
@@ -33,7 +36,22 @@ CREATE TABLE IF NOT EXISTS film_genres (
     idGenre INT,
     PRIMARY KEY (idFilm, idGenre),
     FOREIGN KEY (idFilm) REFERENCES films(id) ON DELETE CASCADE,
-    FOREIGN KEY (idGenre) REFERENCES genres(id)
+    FOREIGN KEY (idGenre) REFERENCES genres(id) ON DELETE CASCADE
+);
+CREATE TABLE user_video_settings (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  idUser INT NOT NULL,
+  idFilm INT NOT NULL,
+  capitulo INT DEFAULT NULL,
+  tiempo INT,
+  idioma VARCHAR(255),
+  subs VARCHAR(255),
+
+  UNIQUE KEY (idUser, idFilm, capitulo),
+
+  FOREIGN KEY (idUser) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (idFilm) REFERENCES films(id) ON DELETE CASCADE,
+  FOREIGN KEY (idFilm, capitulo) REFERENCES serie_capitulos(idSerie, capitulo) ON DELETE CASCADE
 );
 
 INSERT INTO users (username, password, admin) VALUES
