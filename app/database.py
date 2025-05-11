@@ -1,5 +1,4 @@
 import aiomysql
-from fastapi import HTTPException
 from werkzeug.security import check_password_hash, generate_password_hash
 from collections import defaultdict
 
@@ -81,18 +80,12 @@ class Castmanu:
         return {"success": True}
 
     
-    async def register(self, username: str, email: str, password: str, admin: bool = False):
-        # Verificar si el email o username ya existen
-        existing_user = await self.fetch("SELECT * FROM users WHERE email=%s", (email))
-        
-        if existing_user:
-            return {"detail": "El nombre de usuario o el correo ya están en uso."}
+    def hash_my_password(self, password):
         
         # Hash de la contraseña
         hashed_password = generate_password_hash(password)
 
-        await self.fetch("INSERT INTO users(username, email, password) VALUES(%s, %s, %s)", (username, email, hashed_password))
-        return {"success": True, "message": "Usuario registrado con éxito."}
+        return hashed_password
     
     # Esto devuelve todas las pelis y demas
     async def get_all(self, pagina, titulo, tipo, generos):
@@ -152,22 +145,35 @@ class Castmanu:
     # Esto devuelve la info de 1 peli concreta
     async def get_film(self, id):
         # Primero conseguimos todos los elementos
-        film = await self.fetch("SELECT id, title, type, sinopsis, poster, file FROM films WHERE id = %s", (id))
+        film = await self.fetch("SELECT id, title, type, sinopsis, poster, file, extensionOriginal FROM films WHERE id = %s", (id))
+        if not film:
+            return None
         genres_map = await self.fetch("SELECT idFilm, genre FROM film_genres INNER JOIN genres ON idGenre = id WHERE idFilm = %s", (id), True)
+        capitulos_map = await self.fetch("SELECT idSerie, capitulo FROM serie_capitulos WHERE idSerie = %s", (id), True)
 
         # Agrupamos los géneros por id de película
         generos_por_pelicula = defaultdict(list)
+        capitulos_por_serie = defaultdict(list)
         for row in genres_map:
             generos_por_pelicula[row["idFilm"]].append(row["genre"])
+        for row in capitulos_map:
+            capitulos_por_serie[row["idSerie"]].append(row["capitulo"])
 
         # Añadir los géneros a cada film
         film["generos"] = generos_por_pelicula.get(film["id"], [])
+        film["capitulos"] = capitulos_por_serie.get(film["id"], [])
         film.pop("id")
 
         return film
     
+    async def get_extension_cap(self, id, capitulo):
+        # Primero conseguimos todos los elementos
+        extension = await self.fetch("SELECT extensionOriginal FROM serie_capitulos WHERE idSerie = %s AND capitulo = %s",(id, capitulo))
+
+        return extension["extensionOriginal"]
+    
     # Añadir pelicula o elemento
-    async def add_film(self, id, title, type, sinopsis, poster_format, uploader, generos):
+    async def add_film(self, id, title, type, sinopsis, poster_format, uploader, generos, extension):
         
         admin = await self.isAdmin(uploader)
 
@@ -192,9 +198,9 @@ class Castmanu:
         conn, cursor = await self.init_transaction()
         try:
             if id:
-                idFetch = await self.add_to_transaction(cursor, "INSERT INTO films(id, title, type, sinopsis, poster, file, uploader) VALUES(%s, %s, %s, %s, %s, %s, %s) RETURNING id",(id, title, type, sinopsis, poster, file, uploader))
+                idFetch = await self.add_to_transaction(cursor, "INSERT INTO films(id, title, type, sinopsis, poster, file, extensionOriginal, uploader) VALUES(%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",(id, title, type, sinopsis, poster, file, extension, uploader))
             else:
-                idFetch = await self.add_to_transaction(cursor, "INSERT INTO films(title, type, sinopsis, poster, file, uploader) VALUES(%s, %s, %s, %s, %s, %s) RETURNING id",(title, type, sinopsis, poster, file, uploader))
+                idFetch = await self.add_to_transaction(cursor, "INSERT INTO films(title, type, sinopsis, poster, file, extensionOriginal, uploader) VALUES(%s, %s, %s, %s, %s, %s, %s) RETURNING id",(title, type, sinopsis, poster, file, extension, uploader))
             if generos:
                 insertGeneros = ""
                 for genero in generos:
@@ -211,7 +217,7 @@ class Castmanu:
             return {"success": False, "message": f"Error al añadir la película: {e}"}
         
     # Añadir capitulo
-    async def add_capitulo(self, idSerie, capitulo, uploader):
+    async def add_capitulo(self, idSerie, capitulo, uploader, extension):
         
         admin = await self.isAdmin(uploader)
 
@@ -223,7 +229,7 @@ class Castmanu:
         if existe:
             return {"success": False, "message": "El capitulo que intentas añadir ya existe"}
 
-        await self.fetch("INSERT INTO serie_capitulos VALUES(%s, %s)",(idSerie, capitulo))
+        await self.fetch("INSERT INTO serie_capitulos VALUES(%s, %s, %s)",(idSerie, capitulo, extension))
         return {"success": True, "message": "Capitulo añadido"}
     
     # Eliminar pelicula o elemento
@@ -236,12 +242,16 @@ class Castmanu:
         
         if capitulo:
             datos = await self.fetch("DELETE FROM serie_capitulos WHERE idSerie = %s AND capitulo = %s RETURNING *",(id, capitulo))
+            if not datos:
+                return {"success": False, "message": "No se encuentra el capítulo"}
             datos["borrado"] = "capitulo"
         else:
             genres_map = await self.fetch("SELECT idFilm, genre FROM film_genres INNER JOIN genres ON idGenre = id WHERE idFilm = %s", (id), True)
-            capitulos_map = await self.fetch("SELECT idSerie, capitulo FROM serie_capitulos WHERE idSerie = %s", (id), True)
+            capitulos_map = await self.fetch("SELECT idSerie, capitulo, extensionOriginal FROM serie_capitulos WHERE idSerie = %s", (id), True)
 
             datos = await self.fetch("DELETE FROM films WHERE id = %s RETURNING *",(id))
+            if not datos:
+                return {"success": False, "message": "No se encuentra la película o serie"}
 
             # Agrupamos los géneros por id de película
             generos_por_pelicula = defaultdict(list)
@@ -249,7 +259,7 @@ class Castmanu:
             for row in genres_map:
                 generos_por_pelicula[row["idFilm"]].append(row["genre"])
             for row in capitulos_map:
-                capitulos_por_serie[row["idSerie"]].append(row["capitulo"])
+                capitulos_por_serie[row["idSerie"]].append({"capitulo": row["capitulo"], "extension": row["extensionOriginal"]})
 
             # Añadir los géneros a cada film
             datos["generos"] = generos_por_pelicula.get(datos["id"], [])
@@ -334,6 +344,84 @@ class Castmanu:
             # Si algo falla, revertimos la transacción
             await self.finish_transaction(conn, cursor, commit=False)
             return {"success": False, "message": f"Error al editar la película: {e}"}
+    
+    async def get_volume(self, user):
+        volume = await self.fetch("SELECT volume FROM users WHERE id = %s", (user))
+        
+        if not volume["volume"]:
+            volume["volume"] = 1
+        
+        return {"success": True, "message": "Se devuelve el volumen encontrado", "volumen": volume["volume"]}
+    
+    async def update_volume(self, user, volumen):
+        await self.fetch("UPDATE users SET volume = %s WHERE id = %s", (volumen, user))
+        
+        return {"success": True, "message": "Volumen actualizado con éxito"}
+    
+    async def get_settings(self, user, id, capitulo):
+
+        if capitulo:
+            settings = await self.fetch("SELECT * FROM user_video_settings WHERE idUser = %s AND idFilm = %s AND capitulo = %s", (user, id, capitulo))
+        else:
+            settings = await self.fetch("SELECT * FROM user_video_settings WHERE idUser = %s AND idFilm = %s", (user, id))
+        
+        if not settings:
+            return {"success": False, "message": "No hay settings para esto de momento"}
+        
+        return {"success": True, "message": "Se devuelve el tiempo encontrado", "settings": settings}
+    
+    async def update_settings(self, user, id, capitulo, tiempo, idioma, subs):
+
+        if capitulo:
+            existe = await self.fetch("SELECT * FROM user_video_settings WHERE idUser = %s AND idFilm = %s AND capitulo = %s", (user, id, capitulo))
+            if not existe:
+                await self.fetch("INSERT INTO user_video_settings (idUser, idFilm, capitulo, tiempo, idioma, subs) VALUES (%s, %s, %s, %s, %s, %s)", (user, id, capitulo, tiempo, idioma, subs))
+            else:
+                updates = []
+                params = []
+
+                if tiempo is not None:
+                    updates.append("tiempo = %s")
+                    params.append(tiempo)
+                if idioma is not None:
+                    updates.append("idioma = %s")
+                    params.append(idioma)
+                if subs is not None:
+                    updates.append("subs = %s")
+                    params.append(subs)
+
+                params += [user, id, capitulo]
+
+                if updates:
+                    update_query = f"UPDATE user_video_settings SET {', '.join(updates)} WHERE idUser = %s AND idFilm = %s AND capitulo = %s"
+                    await self.fetch(update_query, tuple(params))
+                #await self.fetch("UPDATE user_video_settings SET tiempo = %s WHERE idUser = %s AND idFilm = %s AND capitulo = %s", (tiempo, user, id, capitulo))
+        else:
+            existe = await self.fetch("SELECT * FROM user_video_settings WHERE idUser = %s AND idFilm = %s", (user, id))
+            if not existe:
+                await self.fetch("INSERT INTO user_video_settings (idUser, idFilm, tiempo, idioma, subs) VALUES (%s, %s, %s, %s, %s)", (user, id, tiempo, idioma, subs))
+            else:
+                # Si existe, actualiza solo los valores no nulos
+                updates = []
+                params = []
+
+                if tiempo is not None:
+                    updates.append("tiempo = %s")
+                    params.append(tiempo)
+                if idioma is not None:
+                    updates.append("idioma = %s")
+                    params.append(idioma)
+                if subs is not None:
+                    updates.append("subs = %s")
+                    params.append(subs)
+
+                params += [user, id]
+
+                if updates:
+                    update_query = f"UPDATE user_video_settings SET {', '.join(updates)} WHERE idUser = %s AND idFilm = %s"
+                    await self.fetch(update_query, tuple(params))
+        
+        return {"success": True, "message": "Tiempo actualizado con éxito"}
     
     def mapGenero(self, genero):
         mapping = {
