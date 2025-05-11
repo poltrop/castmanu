@@ -1,9 +1,11 @@
-import { apiDelete, apiDeleteServer, apiPost } from "../api.js";
+import { apiDelete, apiDeleteServer, apiPost, apiGet } from "../api.js";
+import { autorizado } from "../comprobarLogin.js";
 import { getAll } from "../getAll.js";
 import { toggleMenu, initHeader } from "../header.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
     initHeader();
+    await autorizado();
     let genreButton = document.getElementById("genreButton");
     let genreDropdown = document.getElementById("genreDropdown");
     let genreOptions = document.querySelectorAll(".genre-option");
@@ -21,6 +23,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     cleanButton.addEventListener("click",cleanFilters)
     typeFilter.addEventListener("change", changeGenreList);
     genreOptions.forEach(option => {option.addEventListener("click", () => selectGenero(option))});
+    searchInput.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            applyFilters();
+        }
+    });
     
     let params = new URLSearchParams(window.location.search);
     let titulo = params.get("titulo");
@@ -68,15 +75,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     function applyFilters() {
         console.log("filtrando");
-        let searchText = searchInput.value.toLowerCase();
+        let searchText = searchInput.value.trim().toLowerCase();
         //console.log(searchText);
         let selectedType = typeFilter.value.toLowerCase();
         let selectedGenres = Array.from(document.querySelectorAll(".genre-checkbox:checked")).map(checkbox => checkbox.value);
         
         if (!searchText && selectedType == "todo" && selectedGenres.length == 0)
             return
-
         let urlParams = new URLSearchParams(window.location.search);
+        urlParams.delete("pagina");
         if (searchText)
             urlParams.set("titulo", searchText);
         if (selectedType != "todo")
@@ -171,6 +178,20 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (isConfirmed){
             let loading = document.getElementById("loading-spinner");
             loading.classList.remove("hidden");
+            let link;
+            if (type == "Serie")
+                link = `https://castmanu.ddns.net/videos/${type}/${title}/${card.querySelector("select").value}/master.m3u8`;
+            else
+                link = `https://castmanu.ddns.net/videos/${type}/${title}/master.m3u8`;
+            let existe = await fetch(link, {
+                method: 'GET',
+              });
+            if (!existe.ok){
+                console.log(existe);
+                errorMsg.innerText = "El archivo aun no se ha subido y por tanto no se puede borrar. Inténtalo mas tarde";
+                loading.classList.add("hidden");
+                return
+            }
             let resultadoDB = await apiDelete(`http://localhost:8000/delete-film/${card.id}${capitulo}`);
             
             if (!resultadoDB.success){
@@ -190,20 +211,25 @@ document.addEventListener("DOMContentLoaded", async () => {
                         sinopsis: resultadoDB.datos.sinopsis,
                         poster_format: resultadoDB.datos.poster,
                         generos: resultadoDB.datos.generos,
-                        idExt: resultadoDB.datos.idExt
+                        idExt: resultadoDB.datos.idExt,
+                        extension: resultadoDB.datos.extension
                     };
                     await apiPost('http://localhost:8000/add-film', datos);
-                    resultadoDB.datos.capitulos.forEach(async capitulo => {
-                        datos = {
-                            idSerie: resultadoDB.datos.id,
-                            capitulo: capitulo
-                        };
-                        await apiPost('http://localhost:8000/add-capitulo', datos);
-                    });
+                    await Promise.all(
+                        resultadoDB.datos.capitulos.map(capitulo => { //Permite que se añadan todos a la vez
+                            let datos = {
+                                idSerie: resultadoDB.datos.id,
+                                capitulo: capitulo.capitulo,
+                                extension: capitulo.extension
+                            };
+                            return apiPost('http://localhost:8000/add-capitulo', datos);
+                        })
+                    );
                 } else {
                     datos = {
                         idSerie: resultadoDB.datos.idSerie,
-                        capitulo: resultadoDB.datos.capitulo
+                        capitulo: resultadoDB.datos.capitulo,
+                        extension: resultadoDB.datos.extension
                     };
                     await apiPost('http://localhost:8000/add-capitulo', datos);
                 }

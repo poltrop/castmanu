@@ -1,10 +1,12 @@
 import { apiGet } from "../api.js";
-import { toggleMenu, initHeader } from "../header.js";
+import { autorizado } from "../comprobarLogin.js";
+import { initHeader } from "../header.js";
 import { mapGenero } from "../mapGeneros.js";
 import { renderPagination } from "../paginacion.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
     initHeader();
+    await autorizado();
     let botonBuscar = document.getElementById("buscarBtn");
     let botonSeleccionar = document.getElementById("seleccionarBtn");
     let interno = document.getElementById('interno');
@@ -17,14 +19,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     botonBuscar.addEventListener("click",buscar);
     botonSeleccionar.addEventListener("click",seleccion);
     interno.addEventListener("change",swapInterno);
+    let tituloInput = document.getElementById("tituloInput");
+    tituloInput.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            buscar();
+        }
+    });
     mostrarCards();
     
     function buscar(){
         let titulo = document.getElementById("tituloInput").value.trim().toLowerCase();
         let errorMsg = document.getElementById("errorMsg");
         errorMsg.innerText = "";
-        if (!interno && !titulo){
-            errorMsg.innerText = "Debes introducir un título para buscar o añadir capitulo";
+        if (!interno.checked && !titulo){
+            errorMsg.innerText = "Debes introducir un título para buscar";
             return;
         }
         let params = new URLSearchParams(window.location.search);

@@ -1,9 +1,11 @@
 import { apiGet, apiPost, apiPostServer, apiDelete, apiPut, apiPatchServer } from "../api.js";
-import { toggleMenu, initHeader } from "../header.js";
+import { autorizado } from "../comprobarLogin.js";
+import { initHeader } from "../header.js";
 import { mapGenero, mapGeneroId } from "../mapGeneros.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
     initHeader();
+    await autorizado();
     let type = document.getElementById("type");
     type.addEventListener("change", changeGenreList);
     let params = new URLSearchParams(window.location.search);
@@ -17,6 +19,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     let pelicula, titulo, poster, tipo, sinopsis, generos = [];
     if (params.get("id")){
         pelicula = await apiGet(`http://localhost:8000/get-film/${params.get("id")}`);
+        if (!pelicula) window.location.href = 'home.html';
         titulo = pelicula.title;
         poster = !pelicula.poster ? "../assets/img/poster.jpg" : pelicula.poster;
         tipo = pelicula.type;
@@ -101,6 +104,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             capitulo.remove();
             archivo.remove();
             labelArchivo.remove();
+            let opcionBusqueda = document.getElementById("opcionBusqueda");
+            opcionBusqueda.remove();
         }
     }
 
@@ -196,7 +201,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 let data ={
                     idSerie: params.get("id"),
-                    capitulo: capitulo
+                    capitulo: capitulo,
+                    extension: archivo.files[0].name.split('.').pop().toLowerCase()
                 }
 
                 let extraCap = `?capitulo=${capitulo}`;
@@ -219,6 +225,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                     title: titulo,
                     type: tipo,
                 }
+                
+                if (tipo != "Serie"){
+                    data.extension = archivo.files[0].name.split('.').pop().toLowerCase();
+                } 
     
                 if(selectedGenres.length > 0){
                     data.generos = selectedGenres;
@@ -227,8 +237,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 if(sinopsis)
                     data.sinopsis = sinopsis;
     
-                let extraCap = "";
-                
                 let poster_format = null;
                 if(poster.tagName == "INPUT" && poster.files.length > 0){
                     poster_format = poster.files[0].name.split('.').pop().toLowerCase();
@@ -246,11 +254,13 @@ document.addEventListener("DOMContentLoaded", async () => {
                     loading.classList.add("hidden");
                     return
                 }
-
+                
+                let extraCap = "";
                 if(capitulo){
                     data = {
                         idSerie: resultadoDB.id,
-                        capitulo: capitulo
+                        capitulo: capitulo,
+                        extension: archivo.files[0].name.split('.').pop().toLowerCase()
                     }
                     extraCap = `?capitulo=${capitulo}`;
                     let resultadoCapitulo = await apiPost('http://localhost:8000/add-capitulo', data);
@@ -303,8 +313,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 });
                 if (isConfirmed){
                     window.location.href = `rellenar.html?id=${idRedirect}`;
-                    return;
-                }
+                } else window.location.href = `watch.html?id=${idRedirect}&capitulo=${capitulo}`;
+                return;
             }
             setTimeout(() => {
                 window.location.href = `watch.html?id=${idRedirect}`;
