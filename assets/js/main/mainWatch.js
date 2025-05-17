@@ -6,8 +6,8 @@ let params = new URLSearchParams(window.location.search);
 if (!params.get("id")) window.location.href = 'home.html';
 
 document.addEventListener("DOMContentLoaded", async () => {
-    initHeader();
-    await autorizado();
+    let user = await autorizado();
+    initHeader(user.admin == 1);
     let pelicula = await apiGet(`http://localhost:8000/get-film/${params.get("id")}`)
     if (!pelicula) window.location.href = 'home.html';
 

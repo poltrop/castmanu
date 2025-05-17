@@ -4,8 +4,8 @@ import { initHeader } from "../header.js";
 import { mapGenero, mapGeneroId } from "../mapGeneros.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
-    initHeader();
-    await autorizado();
+    let user = await autorizado();
+    initHeader(user.admin == 1);
     let type = document.getElementById("type");
     type.addEventListener("change", changeGenreList);
     let params = new URLSearchParams(window.location.search);
