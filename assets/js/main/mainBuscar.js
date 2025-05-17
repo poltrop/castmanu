@@ -5,8 +5,8 @@ import { mapGenero } from "../mapGeneros.js";
 import { renderPagination } from "../paginacion.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
-    initHeader();
-    await autorizado();
+    let user = await autorizado();
+    initHeader(user.admin == 1);
     let botonBuscar = document.getElementById("buscarBtn");
     let botonSeleccionar = document.getElementById("seleccionarBtn");
     let interno = document.getElementById('interno');
@@ -61,11 +61,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (interno){
             let queryTitulo = "";
             if (titulo)
-                queryTitulo = `&titulo=${titulo}`;
-            let busqueda = await apiGet(`http://localhost:8000/get-all/${currentPage}?tipo=Serie${queryTitulo}`); //llamada
+                queryTitulo = `?titulo=${titulo}`;
+            let busqueda = await apiGet(`http://localhost:8000/get-all-pagination/${currentPage}${queryTitulo}`); //llamada
             let totalPages = busqueda.total_paginas;
             renderPagination(currentPage, totalPages, resultados);
-            if (busqueda.peliculas.length < 1){
+            if (busqueda.series.length < 1){
                 let div = document.createElement("div");
                 input.insertAdjacentElement("afterend",div);
                 
@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
             
             let div,img,h3,p,div2,span;
-            busqueda.peliculas.forEach(serie => {
+            busqueda.series.forEach(serie => {
                 div = document.createElement("div");
                 img = document.createElement("img");
                 h3 = document.createElement("h3");
@@ -87,11 +87,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 div.appendChild(p);
                 div.appendChild(div2);
                 
-                div.classList.add("movie-card", "cursor-pointer", "bg-steel-blue", "p-4", "rounded-lg", "shadow-lg", "flex", "flex-col", "items-center", "hover:scale-105", "transition");
+                div.classList.add("movie-card", "cursor-pointer", "bg-steel-blue","w-[440px]", "p-4", "rounded-lg", "shadow-lg", "flex", "flex-col", "items-center", "hover:scale-105", "transition");
                 div.id = serie.id;
                 img.src = !serie.poster ? "../assets/img/poster.jpg" : serie.poster;
                 img.alt = "Portada";
-                img.classList.add("w-full", "rounded-md", "shadow-md");
+                img.classList.add("w-full", "h-[600px]", "rounded-md", "shadow-md", "object-cover");
                 h3.classList.add("text-neon-cyan", "text-lg", "font-bold", "mt-2", "text-center");
                 h3.innerText = serie.title;
                 p.classList.add("movie-type", "text-sm", "text-gray-blue", "text-center", "bg-neon-cyan/20", "px-2", "py-1", "rounded-md");
@@ -149,11 +149,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 div.appendChild(p);
                 div.appendChild(div2);
                 
-                div.classList.add("movie-card", "cursor-pointer", "bg-steel-blue", "p-4", "rounded-lg", "shadow-lg", "flex", "flex-col", "items-center", "hover:scale-105", "transition");
+                div.classList.add("movie-card", "cursor-pointer", "bg-steel-blue","w-[440px]", "p-4", "rounded-lg", "shadow-lg", "flex", "flex-col", "items-center", "hover:scale-105", "transition");
                 div.id = elemento.id;
                 img.src = !elemento.poster_path ? "../assets/img/poster.jpg" : `https://image.tmdb.org/t/p/w500${elemento.poster_path}`;
                 img.alt = "Portada";
-                img.classList.add("w-full", "rounded-md", "shadow-md");
+                img.classList.add("w-full", "h-[600px]", "rounded-md", "shadow-md", "object-cover");
                 h3.classList.add("text-neon-cyan", "text-lg", "font-bold", "mt-2", "text-center");
                 h3.innerText = elemento.name || elemento.title;
                 p.classList.add("movie-type", "text-sm", "text-gray-blue", "text-center", "bg-neon-cyan/20", "px-2", "py-1", "rounded-md");
