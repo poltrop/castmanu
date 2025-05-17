@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS films (
     file VARCHAR(255) UNIQUE NOT NULL,
     extensionOriginal VARCHAR(255),
     uploader INT,
+    lastUpdate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (title, type),
     FOREIGN KEY (uploader) REFERENCES users(id) ON DELETE SET NULL
 );
