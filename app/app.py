@@ -1,3 +1,4 @@
+import asyncio
 from enum import Enum
 from typing import Optional, List
 from fastapi import FastAPI, Depends, HTTPException, Query
@@ -8,6 +9,7 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import timedelta
 from database import Castmanu
+from server_status import is_server_alive, periodic_alive_check
 import httpx
 
 app = FastAPI()
@@ -18,6 +20,7 @@ API_SERVER = "castmanu"
 URL_TMDB = "https://api.themoviedb.org/3"
 URL_SERVER = "https://castmanu.ddns.net"
 PREPARAMS_TMDB= f"api_key={API_TMDB}&language=es-ES"
+server_alive = False
 
 app.add_middleware(
     CORSMiddleware,
@@ -93,10 +96,19 @@ class Capitulo(BaseModel):
     capitulo: int
     extension: str
 
+@app.on_event("startup")
+async def startup_event():
+    # Lanzamos la tarea periódica al iniciar la app
+    asyncio.create_task(periodic_alive_check())
+
 # Cierra la pool de conexiones
 @app.on_event("shutdown")
 async def shutdown():
     await db.close_pool()
+
+@app.get("/alive")
+async def alive():
+    return is_server_alive()
 
 # Endpoint de Login
 @app.post("/login")
@@ -145,13 +157,43 @@ def hash_my_password(password: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error de servidor: {e}")
 
-@app.get("/get-all/{pagina}")
-async def get_all(pagina: int, titulo: Optional[str] = None, tipo: Optional[str] = None, genero: Optional[List[int]] = Query(None), Authorize: AuthJWT = Depends()):
+@app.get("/get-all")
+async def get_all(titulo: Optional[str] = None, tipo: Optional[str] = None, genero: Optional[List[int]] = Query(None), Authorize: AuthJWT = Depends()):
     try:
         # Verifica que el JWT es válido
         Authorize.jwt_required()
         
-        resultados = await db.get_all(pagina, titulo, tipo, genero)
+        resultados = await db.get_all(titulo, tipo, genero)
+
+        return resultados
+
+    except HTTPException as e:
+        raise HTTPException(status_code=401, detail="No autorizado")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error de servidor: {e}")
+    
+@app.get("/get-genres")
+async def get_genres(Authorize: AuthJWT = Depends()):
+    try:
+        # Verifica que el JWT es válido
+        Authorize.jwt_required()
+        
+        resultados = await db.get_genres()
+
+        return resultados
+
+    except HTTPException as e:
+        raise HTTPException(status_code=401, detail="No autorizado")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error de servidor: {e}")
+    
+@app.get("/get-all-pagination/{pagina}")
+async def get_all_pagination(pagina: int, titulo: Optional[str] = None, Authorize: AuthJWT = Depends()):
+    try:
+        # Verifica que el JWT es válido
+        Authorize.jwt_required()
+        
+        resultados = await db.get_all_pagination(pagina, titulo)
 
         return resultados
 

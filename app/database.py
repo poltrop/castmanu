@@ -1,6 +1,7 @@
 import aiomysql
 from werkzeug.security import check_password_hash, generate_password_hash
 from collections import defaultdict
+from server_status import update_server_alive, is_server_alive
 
 
 class Castmanu:
@@ -78,7 +79,12 @@ class Castmanu:
         if not result:
             return {"success": False, "message": "No tienes permisos de administrador"}
         return {"success": True}
-
+    
+    async def isAlive(self):
+        await update_server_alive()
+        if not is_server_alive():
+            return {"success": False, "message": "El servidor está desconectado. Inténtelo mas tarde"}
+        return {"success": True}
     
     def hash_my_password(self, password):
         
@@ -88,8 +94,7 @@ class Castmanu:
         return hashed_password
     
     # Esto devuelve todas las pelis y demas
-    async def get_all(self, pagina, titulo, tipo, generos):
-        offset = (pagina - 1) * 20
+    async def get_all(self, titulo, tipo, generos):
         params = []
         where_clauses = []
         join_clause = ""
@@ -116,11 +121,7 @@ class Castmanu:
         if where_clauses:
             where_sql = "WHERE " + " AND ".join(where_clauses)
 
-        count_query = f"SELECT CEIL(COUNT(*) / 20.0) AS total FROM (SELECT id FROM films {join_clause} {where_sql} {group_by} {having_clause}) AS sub"
-        total_paginas = await self.fetch(count_query, tuple(params))
-
-        query = f"SELECT id, title, type, poster FROM films {join_clause} {where_sql} {group_by} {having_clause} ORDER BY title LIMIT 20 OFFSET %s"
-        params.append(offset)
+        query = f"SELECT id, title, type, poster FROM films {join_clause} {where_sql} {group_by} {having_clause} ORDER BY lastUpdate DESC"
         films = await self.fetch(query, tuple(params), True)
 
         genres_map = await self.fetch("SELECT idFilm, genre FROM film_genres INNER JOIN genres ON idGenre = id", (), True)
@@ -140,7 +141,40 @@ class Castmanu:
         for serie in films:
             serie["capitulos"] = capitulos_por_serie.get(serie["id"], [])
 
-        return {"peliculas": films, "total_paginas": total_paginas["total"]}
+        return {"peliculas": films}
+    
+    async def get_all_pagination(self, pagina, titulo):
+        offset = (pagina - 1) * 20
+        params = []
+        where_clause = ""
+        
+        if titulo:
+            where_clause = " AND LOWER(title) LIKE LOWER(%s)"
+            params.append(f'%{titulo}%')
+
+        count_query = f"SELECT CEIL(COUNT(*) / 20.0) AS total FROM films WHERE type = 'Serie'{where_clause}"
+        total_paginas = await self.fetch(count_query, tuple(params))
+
+        query = f"SELECT id, title, type, poster FROM films WHERE type = 'Serie'{where_clause} ORDER BY title LIMIT 20 OFFSET %s"
+        params.append(offset)
+        series = await self.fetch(query, tuple(params), True)
+
+        genres_map = await self.fetch("SELECT idFilm, genre FROM film_genres INNER JOIN genres ON idGenre = id", (), True)
+
+        # Agrupamos los géneros por id de película y capitulos por serie
+        generos_por_pelicula = defaultdict(list)
+        for row in genres_map:
+            generos_por_pelicula[row["idFilm"]].append(row["genre"])
+
+        # Añadir los géneros a cada film y capitulos a cada serie
+        for serie in series:
+            serie["genres"] = generos_por_pelicula.get(serie["id"], [])
+
+        return {"series": series, "total_paginas": total_paginas["total"]}
+    
+    async def get_genres(self):
+        genres = await self.fetch("SELECT genre FROM genres", (), True)
+        return [row['genre'] for row in genres]
     
     # Esto devuelve la info de 1 peli concreta
     async def get_film(self, id):
@@ -179,6 +213,11 @@ class Castmanu:
 
         if not admin["success"]:
             return admin
+
+        alive = await self.isAlive()
+
+        if not alive["success"]:
+            return alive
 
         existe = await self.fetch("SELECT * FROM films WHERE title = %s AND type = %s",(title, type))
 
@@ -223,14 +262,27 @@ class Castmanu:
 
         if not admin["success"]:
             return admin
+        
+        alive = await self.isAlive()
+
+        if not alive["success"]:
+            return alive
 
         existe = await self.fetch("SELECT * FROM serie_capitulos WHERE idSerie = %s and capitulo = %s",(idSerie, capitulo))
 
         if existe:
             return {"success": False, "message": "El capitulo que intentas añadir ya existe"}
 
-        await self.fetch("INSERT INTO serie_capitulos VALUES(%s, %s, %s)",(idSerie, capitulo, extension))
-        return {"success": True, "message": "Capitulo añadido"}
+        # Iniciar transacción
+        conn, cursor = await self.init_transaction()
+        try:
+            await self.add_to_transaction(cursor, "INSERT INTO serie_capitulos VALUES(%s, %s, %s)",(idSerie, capitulo, extension))
+            await self.add_to_transaction(cursor, "UPDATE films SET lastUpdate = CURRENT_TIMESTAMP")
+            await self.finish_transaction(conn, cursor)
+            return {"success": True, "message": "Capitulo añadido"}
+        except Exception as e:
+            await self.finish_transaction(conn, cursor, commit=False)
+            return {"success": False, "message": f"Error al añadir el capítulo: {e}"}
     
     # Eliminar pelicula o elemento
     async def delete_film(self, id, capitulo, deleter):
@@ -239,6 +291,11 @@ class Castmanu:
 
         if not admin["success"]:
             return admin
+        
+        alive = await self.isAlive()
+
+        if not alive["success"]:
+            return alive
         
         if capitulo:
             datos = await self.fetch("DELETE FROM serie_capitulos WHERE idSerie = %s AND capitulo = %s RETURNING *",(id, capitulo))
@@ -275,6 +332,11 @@ class Castmanu:
 
         if not admin["success"]:
             return admin
+        
+        alive = await self.isAlive()
+
+        if not alive["success"]:
+            return alive
         
         current = await self.get_film(id)
         if not current:
