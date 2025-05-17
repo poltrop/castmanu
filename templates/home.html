@@ -18,95 +18,32 @@
     <script src="../assets/js/main/mainHome.js" type="module"></script>
 </head>
 <body class="bg-midnight-blue text-gray-blue min-h-screen">
-    <div id="loading-spinner" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-        <div class="w-12 h-12 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
-    </div>
-    <!-- Header -->
-    <header class="bg-steel-blue sticky top-0 w-full p-4 shadow-lg flex items-center justify-between z-10">
-        <a href="home.html" class="text-neon-cyan text-xl font-bold sm:text-2xl me-2">ManuCast</a>
-        
-        <!-- Barra de búsqueda -->
-        <div class="flex gap-4 w-1/2">
-            <input id="searchInput" type="text" placeholder="Buscar..." class="w-full p-2 rounded-md bg-deep-black text-gray-blue focus:ring-2 focus:ring-neon-cyan">
+    <div id="app">
+        <div id="loading-spinner" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+            <div class="w-12 h-12 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
         </div>
-        
-        <!-- Contenedor para el botón de filtros y el menú de filtros -->
-        <div class="relative flex items-center">
-            <!-- Botón de filtros en pantallas pequeñas -->
-            <button id="filterToggle" class="lg:hidden bg-gray-blue/50 px-4 py-2 rounded-md text-midnight-blue font-bold mx-2">🔍</button>
-
-            <!-- Menú de filtros (oculto en pantallas pequeñas) -->
-            <div id="filterMenu" class="hidden absolute mx-2 top-12 right-0 bg-steel-blue p-4 rounded-md shadow-lg lg:relative lg:top-auto lg:right-auto lg:bg-transparent lg:p-0 lg:shadow-none lg:flex lg:gap-2">
-                <select id="typeFilter" class="mb-2 p-2 lg:mb-0 bg-deep-black text-center text-gray-blue rounded-md focus:ring-2 focus:ring-neon-cyan w-24">
-                    <option value="todo">Todos</option>
-                    <option value="pelicula">Películas</option>
-                    <option value="serie">Series</option>
-                    <option value="otro">Otros</option>
-                </select>
-                <div class="relative">
-                    <button id="genreButton" class="w-24 p-2 bg-deep-black text-gray-blue rounded-md focus:ring-2 focus:ring-neon-cyan">Géneros</button>
-                    <div id="genreDropdown" class="absolute mt-2 bg-deep-black text-gray-blue rounded-md shadow-md p-4 w-48 h-96 hidden gap-2 overflow-y-auto hidden">
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Acción" class="genre-checkbox hidden"> <span>🎬 Acción</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="Acción y Aventura" class="genre-checkbox hidden"> <span>📺 Acción y Aventura</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="Animación" class="genre-checkbox hidden"> <span>🎬📺 Animación</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Aventura" class="genre-checkbox hidden"> <span>🎬 Aventura</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Bélica" class="genre-checkbox hidden"> <span>🎬 Bélica</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Ciencia ficción" class="genre-checkbox hidden"> <span>🎬 Ciencia ficción</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="Ciencia ficción y Fantasía" class="genre-checkbox hidden"> <span>📺 Ciencia ficción y Fantasía</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="Comedia" class="genre-checkbox hidden"> <span>🎬📺 Comedia</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="Crimen" class="genre-checkbox hidden"> <span>🎬📺 Crimen</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="Documental" class="genre-checkbox hidden"> <span>🎬📺 Documental</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="Drama" class="genre-checkbox hidden"> <span>🎬📺 Drama</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="Familia" class="genre-checkbox hidden"> <span>🎬📺 Familia</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Fantasía" class="genre-checkbox hidden"> <span>🎬 Fantasía</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="Guerra y Política" class="genre-checkbox hidden"> <span>📺 Guerra y Política</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Historia" class="genre-checkbox hidden"> <span>🎬 Historia</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="Misterio" class="genre-checkbox hidden"> <span>🎬📺 Misterio</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Música" class="genre-checkbox hidden"> <span>🎬 Música</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="Niños" class="genre-checkbox hidden"> <span>📺 Niños</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="Noticias" class="genre-checkbox hidden"> <span>📺 Noticias</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Película de TV" class="genre-checkbox hidden"> <span>🎬 Película de TV</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="Reality" class="genre-checkbox hidden"> <span>📺 Reality</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Romance" class="genre-checkbox hidden"> <span>🎬 Romance</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="Soap" class="genre-checkbox hidden"> <span>📺 Soap</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Suspense" class="genre-checkbox hidden"> <span>🎬 Suspense</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="Talk Show" class="genre-checkbox hidden"> <span>📺 Talk Show</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Terror" class="genre-checkbox hidden"> <span>🎬 Terror</span></label>
-                        <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="Western" class="genre-checkbox hidden"> <span>🎬📺 Western</span></label>
+        <div class="flex flex-col md:flex-row min-h-screen m-0">
+            <aside class="md:sticky md:top-16 w-0 md:w-0 h-0 scale-x-0 shrink-0 bg-midnight-blue text-white flex flex-col gap-8 transition-all duration-300 md:overflow-y-auto">
+                <!-- Filtro por tipo -->
+                <div>
+                    <h2 class="text-lg text-center font-bold my-4 text-neon-cyan">Tipo</h2>
+                    <div id="typeFilters" class="flex flex-col gap-2">
+                        <button data-tipo="Todo" class="bg-deep-black px-4 py-2 rounded hover:bg-neon-cyan hover:text-midnight-blue transition">Todo</button>
+                        <button data-tipo="Pelicula" class="bg-deep-black px-4 py-2 rounded hover:bg-neon-cyan hover:text-midnight-blue transition">Película</button>
+                        <button data-tipo="Serie" class="bg-deep-black px-4 py-2 rounded hover:bg-neon-cyan hover:text-midnight-blue transition">Serie</button>
+                        <button data-tipo="Otro" class="bg-deep-black px-4 py-2 rounded hover:bg-neon-cyan hover:text-midnight-blue transition">Otro</button>
                     </div>
                 </div>
-                <button id="filterButton" class="w-24 bg-neon-cyan px-4 py-2 mt-2 lg:mt-0 rounded-md text-midnight-blue font-bold hover:scale-105 transition">Filtrar</button>
-                <button id="cleanButton" class="w-24 bg-neon-cyan px-4 py-2 mt-2 lg:mt-0 rounded-md text-midnight-blue font-bold hover:scale-105 transition">Limpiar</button>
-            </div>
+                <!-- Filtro por género (generado dinámicamente) -->
+                <div>
+                    <h2 class="text-lg text-center font-bold mb-4 text-neon-cyan">Género</h2>
+                    <div id="genreFilters" class="flex flex-col gap-2 md:h-screen overflow-y-auto"></div>
+                </div>
+            </aside>
+            <main class="p-8 mx-auto flex flex-1 flex-col w-full min-w-0 items-center">
+                <div id="cards" class="flex flex-col gap-6 w-full overflow-x-auto"></div>
+            </main>
         </div>
-
-        
-        <!-- Menú Hamburguesa -->
-        <button id="menuToggle" class="lg:hidden bg-gray-blue/50 px-4 py-2 rounded-md text-midnight-blue font-bold">☰</button>
-        
-        <!-- Menú de navegación -->
-        <nav id="menu" class="hidden absolute top-16 right-4 bg-steel-blue p-4 rounded-md shadow-lg flex flex-col gap-2 lg:flex lg:relative lg:top-auto lg:right-auto lg:bg-transparent lg:p-0 lg:shadow-none lg:flex-row lg:gap-2">
-            <a href="buscar.html" class="w-24 bg-neon-cyan px-4 py-2 rounded-md text-midnight-blue font-bold hover:scale-105 transition text-center">Añadir</a>
-            <a href="home.html?eliminar=true" class="w-24 bg-gray-blue/50 px-4 py-2 rounded-md text-midnight-blue font-bold hover:scale-105 transition text-center">Eliminar</a>
-            <a href="home.html?editar=true" class="w-24 bg-gray-blue/50 px-4 py-2 rounded-md text-midnight-blue font-bold hover:scale-105 transition text-center">Editar</a>
-            <div class="relative">
-                <button id="profileButton" class="w-24 bg-gray-blue/50 px-4 py-2 rounded-md text-midnight-blue font-bold hover:scale-105 transition">Perfil</button>
-                <div id="profileMenu" class="absolute right-0 mt-2 w-48 bg-steel-blue text-gray-blue rounded-xl shadow-lg hidden flex flex-col z-50 divide-y divide-gray-blue/30">
-                    <a href="#" class="block px-4 py-3 font-semibold hover:bg-neon-cyan hover:text-midnight-blue transition rounded-t-xl">Cambiar Contraseña</a>
-                    <a href="#" class="block px-4 py-3 font-semibold hover:bg-neon-cyan hover:text-midnight-blue transition rounded-b-xl">Cerrar Sesión</a>
-                </div>                
-            </div>
-        </nav>
-    </header>
-    
-    <!-- Contenido principal -->
-    <main class="p-8 mx-auto flex flex-col items-center justify-center">
-        <h1 class="text-2xl sm:text-3xl text-neon-cyan font-bold mb-6 hidden">Selecciona un elemento para eliminar</h1>
-        <h1 class="text-2xl sm:text-3xl text-neon-cyan font-bold mb-6 hidden">Selecciona un elemento para editar</h1>
-        <div id="cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
-        <button id="eliminar" class="mt-6 bg-neon-cyan text-midnight-blue px-6 py-2 rounded-md font-bold hover:scale-105 transition mb-8 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:text-gray-600 disabled:hover:scale-100 hidden" disabled>Eliminar</button>
-        <button id="editar" class="mt-6 bg-neon-cyan text-midnight-blue px-6 py-2 rounded-md font-bold hover:scale-105 transition mb-8 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:text-gray-600 disabled:hover:scale-100 hidden" disabled>Editar</button>
-        <div id="errorMsg" class="text-red-400"></div>
-    </main>
+    </div>
 </body>
 </html>
