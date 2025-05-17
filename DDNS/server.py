@@ -17,6 +17,11 @@ def check_auth():
     if not auth.startswith("Bearer ") or auth.split(" ", 1)[1] != API_KEY:
         abort(401)
 
+@app.route("/alive", methods=["GET"])
+def alive():
+    check_auth()
+    return {"status": "alive"}
+
 @app.route("/upload/<titulo>/<tipo>", methods=["POST"])
 def upload(titulo, tipo):
     check_auth()
