@@ -1,31 +1,22 @@
 import { apiDelete, apiDeleteServer, apiPost, apiGet } from "../api.js";
 import { autorizado } from "../comprobarLogin.js";
 import { getAll } from "../getAll.js";
-import { toggleMenu, initHeader } from "../header.js";
+import { initHeader } from "../header.js";
+import { getGenreType } from "../mapGeneros.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
-    initHeader();
-    await autorizado();
-    let genreButton = document.getElementById("genreButton");
-    let genreDropdown = document.getElementById("genreDropdown");
-    let genreOptions = document.querySelectorAll(".genre-option");
-    let filterToggle = document.getElementById("filterToggle");
-    let filterMenu = document.getElementById("filterMenu");
+    let user = await autorizado();
+    await initHeader(user.admin == 1, true);
     // Parte de filtros DESPUES DE CARGAR TODO
-    let filterButton = document.getElementById("filterButton");
+    let buscarButton = document.getElementById("buscarButton");
     let cleanButton = document.getElementById("cleanButton");
     let searchInput = document.getElementById("searchInput");
-    let typeFilter = document.getElementById("typeFilter");
-
-    toggleMenu(filterToggle, filterMenu);
-    toggleMenu(genreButton, genreDropdown, true);
-    filterButton.addEventListener("click",applyFilters)
+    
+    buscarButton.addEventListener("click",searchText)
     cleanButton.addEventListener("click",cleanFilters)
-    typeFilter.addEventListener("change", changeGenreList);
-    genreOptions.forEach(option => {option.addEventListener("click", () => selectGenero(option))});
     searchInput.addEventListener('keydown', function(event) {
         if (event.key === 'Enter') {
-            applyFilters();
+            searchText();
         }
     });
     
@@ -39,64 +30,124 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (titulo)
         searchInput.value = titulo;
 
-    if (tipo)
-        typeFilter.value = tipo;
-
-    generos.forEach(generoSelect => {
-        // Buscamos el input con ese valor
-        let input = document.querySelector(`.genre-checkbox[value="${generoSelect}"]`);
-        if (input) {
-            // Subimos al label contenedor
-            let label = input.closest("label");
-            if (label) {
-                selectGenero(label);
+    let aside = document.querySelector("aside");
+    let burger = document.getElementById("sidebarToggle");
+    burger.addEventListener("click", () => {
+        aside.classList.toggle("scale-x-0");
+        if (aside.classList.contains("w-0")) {
+            if (window.innerWidth < 768) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                aside.classList.add("h-screen");
             }
+            aside.classList.remove("w-0", "md:w-0", "h-0");
+            aside.classList.add("w-full", "md:w-64");
+            
+        } else {
+            aside.classList.remove("w-full", "md:w-64");
+            aside.classList.add("w-0", "md:w-0");
+            setTimeout(() => {
+                aside.classList.remove("h-screen");
+                aside.classList.add("h-0");
+            }, 300);
         }
     });
+
+    for (let child of document.getElementById('typeFilters').children) if (child.dataset.tipo == tipo) child.classList.add('ring-4', 'ring-white', 'ring-inset', 'bg-neon-cyan', 'text-midnight-blue');
     
     // Ejecucion de funciones que rellenan cosas
-    getAll();
+    let generosUsados = await getAll();
 
-    if (isEliminar){
-        let eliminarButton = document.getElementById("eliminar");
-        eliminarButton.classList.remove("hidden");
-        eliminarButton.addEventListener("click", eliminar);
+    let genreFilters = document.getElementById('genreFilters');
 
-        let eliminarTitulo = document.querySelector("main > h1");
-        eliminarTitulo.classList.remove("hidden");
-    } else if (isEditar){
-        let editarButton = document.getElementById("editar");
-        editarButton.classList.remove("hidden");
-        editarButton.addEventListener("click", editar);
+    // Opción "Todos"
+    let allGenresBtn = document.createElement('button');
+    allGenresBtn.textContent = "Todos";
+    allGenresBtn.className = "bg-deep-black px-4 py-2 rounded hover:bg-neon-cyan hover:text-midnight-blue transition";
+    allGenresBtn.dataset.genero = "todo";
+    genreFilters.appendChild(allGenresBtn);
 
-        let eliminarTitulo = document.querySelector("main > h1:nth-of-type(2)");
-        eliminarTitulo.classList.remove("hidden");
+    // Crear botones de género
+    generosUsados.forEach(g => {
+        let btn = document.createElement('button');
+        btn.textContent = g;
+        btn.className = "bg-deep-black px-4 py-2 rounded hover:bg-neon-cyan hover:text-midnight-blue transition";
+        btn.dataset.genero = g;
+        if (getGenreType(g)) btn.classList.add(getGenreType(g));
+        if (generos.includes(g)) btn.classList.add('ring-4', 'ring-white', 'ring-inset', 'bg-neon-cyan', 'text-midnight-blue');
+        genreFilters.appendChild(btn);
+    });
+
+    // Eventos
+    document.getElementById('typeFilters').addEventListener('click', (e) => {
+        if (e.target.tagName !== "BUTTON") return;
+        let type = e.target.dataset.tipo;
+        let params = new URLSearchParams(window.location.search);
+
+        if (type == "todo" || type == tipo) params.delete("tipo");
+        else params.set("tipo", type);
+
+        window.location.search = params.toString();
+    });
+
+    genreFilters.addEventListener('click', (e) => {
+        if (e.target.tagName !== "BUTTON") return;
+        let genero = e.target.dataset.genero;
+        let params = new URLSearchParams(window.location.search);
+
+        if (genero == "todo") params.delete("genero");
+        else if (generos.includes(genero)) params.delete("genero", genero);
+        else params.append("genero", genero);
+
+        window.location.search = params.toString();
+    });
+
+
+    let main = document.querySelector('main');
+    if (isEliminar) {
+        let h1 = document.createElement('h1');
+        h1.className = 'text-2xl sm:text-3xl text-neon-cyan font-bold mb-6';
+        h1.textContent = 'Selecciona un elemento para eliminar';
+
+        let button = document.createElement('button');
+        button.id = 'eliminar';
+        button.className = 'mt-6 bg-neon-cyan text-midnight-blue px-6 py-2 rounded-md font-bold hover:scale-105 transition mb-8 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:text-gray-600 disabled:hover:scale-100';
+        button.disabled = true;
+        button.textContent = 'Eliminar';
+        button.addEventListener("click", eliminar);
+
+        main.appendChild(button);
+        main.insertBefore(h1, main.firstChild);
+    }
+    
+    if (isEditar) {
+        let h1 = document.createElement('h1');
+        h1.className = 'text-2xl sm:text-3xl text-neon-cyan font-bold mb-6';
+        h1.textContent = 'Selecciona un elemento para editar';
+
+        let button = document.createElement('button');
+        button.id = 'editar';
+        button.className = 'mt-6 bg-neon-cyan text-midnight-blue px-6 py-2 rounded-md font-bold hover:scale-105 transition mb-8 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:text-gray-600 disabled:hover:scale-100';
+        button.disabled = true;
+        button.textContent = 'Editar';
+        button.addEventListener("click", editar);
+
+        main.appendChild(button);
+        main.insertBefore(h1, main.firstChild);
     }
 
-    function applyFilters() {
-        console.log("filtrando");
+    function searchText() {
         let searchText = searchInput.value.trim().toLowerCase();
-        //console.log(searchText);
-        let selectedType = typeFilter.value.toLowerCase();
-        let selectedGenres = Array.from(document.querySelectorAll(".genre-checkbox:checked")).map(checkbox => checkbox.value);
         
-        if (!searchText && selectedType == "todo" && selectedGenres.length == 0)
-            return
         let urlParams = new URLSearchParams(window.location.search);
-        urlParams.delete("pagina");
-        if (searchText)
-            urlParams.set("titulo", searchText);
-        if (selectedType != "todo")
-            urlParams.set("tipo", selectedType);
-        if (selectedGenres.length > 0){
-            selectedGenres.forEach(genero => {
-                urlParams.set("genero", genero);
-            });
+        if (!searchText) {
+            urlParams.delete("titulo");
+            window.location.search = urlParams.toString();
+            return;
         }
-
-        let queryParams = urlParams.toString();
-
-        window.location.href = `home.html${queryParams ? '?' + queryParams : ''}`;
+        
+        urlParams.set("titulo", searchText);
+        window.location.search = urlParams.toString();
     }
 
     function cleanFilters(){
@@ -105,45 +156,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         urlParams.delete("tipo");
         urlParams.delete("genero");
 
-        let queryParams = urlParams.toString();
-
-        window.location.href = `home.html${queryParams ? '?' + queryParams : ''}`;
-    }
-
-    function changeGenreList(){
-        let selected = typeFilter.value;
-        
-        let allLabels = document.querySelectorAll('#genreDropdown label');
-        let movieGenres = document.querySelectorAll('#genreDropdown .movie-genre');
-        let serieGenres = document.querySelectorAll('#genreDropdown .serie-genre');
-        
-        // Mostrar todos
-        allLabels.forEach(label => label.classList.remove('hidden'));
-
-        // Ocultar según el tipo seleccionado
-        if (selected === "pelicula") {
-            serieGenres.forEach(label => {
-                label.classList.add('hidden');
-                if (label.classList.contains("bg-neon-cyan"))
-                    selectGenero(label);
-            });
-        } else if (selected === "serie") {
-            movieGenres.forEach(label => {
-                label.classList.add('hidden');
-                if (label.classList.contains("bg-neon-cyan"))
-                    selectGenero(label);
-            });
-        }
-    }
-
-    function selectGenero(option){
-        let checkbox = option.querySelector(".genre-checkbox");
-        checkbox.checked = !checkbox.checked;
-        if (checkbox.checked) {
-            option.classList.add("bg-neon-cyan", "text-midnight-blue", "rounded-full", "font-bold");
-        } else {
-            option.classList.remove("bg-neon-cyan", "text-midnight-blue", "rounded-full", "font-bold");
-        } // Cambia el color al seleccionar
+        window.location.search = urlParams.toString();
     }
 
     async function eliminar(){
@@ -151,8 +164,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         let card = cards.querySelector('.selected');
         let title = card.querySelector("h3").innerText;
         let type = card.querySelector("p").innerText;
-        let errorMsg = document.getElementById("errorMsg");
+
+        let errorMsg = document.getElementById('errorMsg');
+        if (!errorMsg) {
+            errorMsg = document.createElement('div');
+            errorMsg.id = 'errorMsg';
+            errorMsg.className = 'text-red-400';
+            let main = document.querySelector('main');
+            main.appendChild(errorMsg);
+        }
+
         errorMsg.innerText = "";
+
         let capitulo = "";
         if (type == "Serie"){
             capitulo = card.querySelector("select").value;
