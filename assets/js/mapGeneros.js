@@ -97,3 +97,33 @@ export function mapGeneroInverso(genero) {
 
     return mapping[genero];
 }
+
+export function getGenreType(genreName) {
+  switch (genreName) {
+    case "Acción":
+    case "Aventura":
+    case "Bélica":
+    case "Ciencia ficción":
+    case "Fantasía":
+    case "Historia":
+    case "Música":
+    case "Película de TV":
+    case "Romance":
+    case "Suspense":
+    case "Terror":
+      return "movie-genre";
+
+    case "Acción y Aventura":
+    case "Ciencia ficción y Fantasía":
+    case "Guerra y Política":
+    case "Niños":
+    case "Noticias":
+    case "Reality":
+    case "Soap":
+    case "Talk Show":
+      return "serie-genre";
+
+    default:
+      return "";
+  }
+}
