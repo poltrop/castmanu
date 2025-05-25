@@ -24,9 +24,16 @@
         </div>
         <div class="flex flex-col md:flex-row min-h-screen m-0">
             <aside class="md:sticky md:top-16 w-0 md:w-0 h-0 scale-x-0 shrink-0 bg-midnight-blue text-white flex flex-col gap-8 transition-all duration-300 md:overflow-y-auto">
+                <!-- Limpiar filtros -->
+                <div>
+                    <h2 class="text-lg text-center font-bold my-4 text-neon-cyan">Limpiar filtros</h2>
+                    <div class="flex flex-col">
+                        <button id="cleanButton" class="bg-deep-black px-4 py-2 rounded hover:bg-neon-cyan hover:text-midnight-blue transition">Limpiar</button>
+                    </div>
+                </div>
                 <!-- Filtro por tipo -->
                 <div>
-                    <h2 class="text-lg text-center font-bold my-4 text-neon-cyan">Tipo</h2>
+                    <h2 class="text-lg text-center font-bold mb-4 text-neon-cyan">Tipo</h2>
                     <div id="typeFilters" class="flex flex-col gap-2">
                         <button data-tipo="Todo" class="bg-deep-black px-4 py-2 rounded hover:bg-neon-cyan hover:text-midnight-blue transition">Todo</button>
                         <button data-tipo="Pelicula" class="bg-deep-black px-4 py-2 rounded hover:bg-neon-cyan hover:text-midnight-blue transition">Película</button>
