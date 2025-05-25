@@ -39,10 +39,11 @@ jobs:
                       )
           EOF
 
-      - name: Set up Flyctl
-        uses: superfly/flyctl-actions/setup-flyctl@v1
-        with:
-          version: latest
+      - name: Install flyctl manually
+        run: |
+          curl -L https://fly.io/install.sh | sh
+          export PATH="$HOME/.fly/bin:$PATH"
+          echo "$HOME/.fly/bin" >> $GITHUB_PATH
 
       - name: Authenticate Fly.io
         env:
