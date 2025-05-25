@@ -56,6 +56,10 @@ class User(BaseModel):
     username: str
     password: str
 
+class ChangePassword(BaseModel):
+    currentPassword: str
+    newPassword: str
+
 class RegisterRequest(User):
     email: str
 
@@ -116,17 +120,17 @@ async def login(user: User, Authorize: AuthJWT = Depends()):
     # Verificación de usuario en la "base de datos"
     usuario = await db.login(user.username,user.password)
 
-    if not usuario:
-        raise HTTPException(status_code=401, detail="Usuario o contraseña incorrectos")
-
+    if not usuario["success"]:
+        return usuario
     # Crear el token de acceso con más información en el payload
     access_token = Authorize.create_access_token(
         subject=user.username,
         expires_time=timedelta(days=30),
         user_claims={"id": usuario["id"], "admin": usuario["admin"]}  # Información adicional
     )
-    response = JSONResponse({"success": True})
+    response = JSONResponse(usuario)
     Authorize.set_access_cookies(access_token, response)
+
     return response
 
 # Endpoint para verificar si el usuario está autenticado
@@ -141,11 +145,13 @@ async def check_auth(Authorize: AuthJWT = Depends()):
         "admin": claims.get("admin")
     }
 
-@app.post("/logout")
+@app.get("/logout")
 async def logout(Authorize: AuthJWT = Depends()):
     # Eliminar las cookies de acceso
     response = JSONResponse({"success": True, "message": "Logout exitoso"})
-    Authorize.unset_jwt_cookies(response)  # Esto elimina las cookies del cliente
+    #Authorize.unset_jwt_cookies(response)  # Esto elimina las cookies del cliente
+    response.set_cookie(key="access_token_cookie", value="", expires=0, httponly=True, secure=True, samesite="none", path="/") #Debo hacerlo a mano porque no me respeta los parametros
+    response.set_cookie(key="refresh_token_cookie", value="", expires=0, httponly=True, secure=True, samesite="none", path="/")
     return response
 
 @app.get("/hash-my-password/{password}")
@@ -154,6 +160,22 @@ def hash_my_password(password: str):
         response = db.hash_my_password(password)
 
         return response
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error de servidor: {e}")
+    
+@app.post("/change-password")
+async def change_password(changePassword: ChangePassword, Authorize: AuthJWT = Depends()):
+    try:
+        # Verifica que el JWT es válido
+        Authorize.jwt_required()
+        claims = Authorize.get_raw_jwt()
+        user = claims.get("id")
+        resultados = await db.change_password(user, changePassword.currentPassword, changePassword.newPassword)
+
+        return resultados
+
+    except HTTPException as e:
+        raise HTTPException(status_code=401, detail="No autorizado")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error de servidor: {e}")
 

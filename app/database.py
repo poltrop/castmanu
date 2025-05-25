@@ -70,9 +70,11 @@ class Castmanu:
     
     async def login(self, username: str, password: str):
         user = await self.fetch("SELECT * FROM users WHERE username=%s", (username))
-        if user and check_password_hash(user["password"], password):
-            return {"id": user["id"], "admin": user["admin"]}
-        return None
+    
+        if not user or not check_password_hash(user["password"], password):
+            return{"success": False, "message": "Usuario o contraseña incorrectos"}
+        
+        return {"success": True, "message": "Inicio de sesión exitoso!", "id": user["id"], "admin": user["admin"]}
     
     async def isAdmin(self, id):
         result = await self.fetch("SELECT * FROM users WHERE id = %s AND admin = 1", (id))
@@ -92,6 +94,17 @@ class Castmanu:
         hashed_password = generate_password_hash(password)
 
         return hashed_password
+    
+    async def change_password(self, user, currentPassword, newPassword):
+        usuario = await self.fetch("SELECT * FROM users WHERE id = %s",(user))
+
+        if not check_password_hash(usuario["password"], currentPassword):
+            return {"success": False, "message": "La contraseña anterior no es correcta"}
+        
+        hashed_password = generate_password_hash(newPassword)
+        await self.fetch("UPDATE users SET password = %s WHERE id = %s",(hashed_password, user))
+
+        return {"success": True, "message": "Contraseña cambiada con éxito!"}
     
     # Esto devuelve todas las pelis y demas
     async def get_all(self, titulo, tipo, generos):
