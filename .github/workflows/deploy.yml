@@ -16,7 +16,8 @@ jobs:
 
       - name: Eliminar extensiones .html en enlaces
         run: |
-          find templates/ assets/js/ -type f -name "*.html" -exec sed -i 's/href="\([^"]*\)\.html"/href="\1"/g' {} +
+          find templates/ -type f -name "*.html" -exec sed -i 's/href="\([^"]*\)\.html"/href="\1"/g' {} +
+          find assets/js/ -type f -name "*.js" -exec sed -i 's/href="\([^"]*\)\.html"/href="\1"/g' {} +
 
       - name: Reemplazar URL localhost por URL Fly
         run: |
