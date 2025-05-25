@@ -18,27 +18,20 @@ jobs:
         env:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         run: |
-          cat > app/database.py <<EOF
-          import aiomysql
-
-          class Database:
-              def __init__(self):
-                  self.pool = None
-
-              async def setup_pool(self):
-                  if not self.pool:
-                      self.pool = await aiomysql.create_pool(
-                          host='bbdd.castmanu.com',
-                          user='ddb252198',
-                          password='${DB_PASSWORD}',
-                          db='ddb252198',
-                          charset='utf8mb4',
-                          autocommit=True,
-                          minsize=1,
-                          maxsize=10,
-                          cursorclass=aiomysql.DictCursor
-                      )
-          EOF
+          sed -i '/async def setup_pool/,/)/c\
+          async def setup_pool(self):\
+              if not self.pool:\
+                  self.pool = await aiomysql.create_pool(\
+                      host="bbdd.castmanu.com",\
+                      user="ddb252198",\
+                      password="'${DB_PASSWORD}'",\
+                      db="ddb252198",\
+                      charset="utf8mb4",\
+                      autocommit=True,\
+                      minsize=1,\
+                      maxsize=10,\
+                      cursorclass=aiomysql.DictCursor\
+                  )' app/database.py
 
       - name: Install flyctl manually
         run: |
@@ -49,7 +42,7 @@ jobs:
       - name: Authenticate Fly.io
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-        run: fly auth token $FLY_API_TOKEN
+        run: fly tokens create $FLY_API_TOKEN
 
       - name: Deploy to Fly.io
         env:
