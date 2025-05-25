@@ -1,5 +1,6 @@
 import { apiDelete, apiDeleteServer, apiPost, apiGet } from "../api.js";
 import { autorizado } from "../comprobarLogin.js";
+import { cleanFilters, filterGenre, filterType, searchText } from "../filters.js";
 import { getAll } from "../getAll.js";
 import { initHeader } from "../header.js";
 import { getGenreType } from "../mapGeneros.js";
@@ -8,28 +9,32 @@ document.addEventListener("DOMContentLoaded", async () => {
     let user = await autorizado();
     await initHeader(user.admin == 1, true);
     // Parte de filtros DESPUES DE CARGAR TODO
-    let buscarButton = document.getElementById("buscarButton");
     let cleanButton = document.getElementById("cleanButton");
     let searchInput = document.getElementById("searchInput");
+    let typeFilterButtons = document.querySelectorAll('#typeFilters button');
     
-    buscarButton.addEventListener("click",searchText)
     cleanButton.addEventListener("click",cleanFilters)
-    searchInput.addEventListener('keydown', function(event) {
-        if (event.key === 'Enter') {
-            searchText();
-        }
+    searchInput.addEventListener("input",searchText);
+    typeFilterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            let tipoSeleccionado = button.dataset.tipo;
+            
+            if (button.classList.contains("ring-2")) tipoSeleccionado = "Todo"; //Si ya estaba seleccionado, metiendo esto hace que se deseleccione
+            
+            typeFilterButtons.forEach(btn => {
+                btn.classList.remove('ring-2', 'ring-white', 'ring-inset', 'bg-neon-cyan', 'text-midnight-blue');
+            });
+            
+            if (tipoSeleccionado != "Todo") button.classList.add('ring-2', 'ring-white', 'ring-inset', 'bg-neon-cyan', 'text-midnight-blue');
+            
+            filterType(tipoSeleccionado);
+        });
     });
     
     let params = new URLSearchParams(window.location.search);
-    let titulo = params.get("titulo");
-    let tipo = params.get("tipo");
-    let generos = params.getAll("genero");
     let isEliminar = params.get("eliminar");
     let isEditar = params.get("editar");
-
-    if (titulo)
-        searchInput.value = titulo;
-
+    
     let aside = document.querySelector("aside");
     let burger = document.getElementById("sidebarToggle");
     burger.addEventListener("click", () => {
@@ -52,21 +57,18 @@ document.addEventListener("DOMContentLoaded", async () => {
             }, 300);
         }
     });
-
-    for (let child of document.getElementById('typeFilters').children) if (child.dataset.tipo == tipo) child.classList.add('ring-4', 'ring-white', 'ring-inset', 'bg-neon-cyan', 'text-midnight-blue');
     
     // Ejecucion de funciones que rellenan cosas
     let generosUsados = await getAll();
-
     let genreFilters = document.getElementById('genreFilters');
-
+    
     // Opción "Todos"
     let allGenresBtn = document.createElement('button');
     allGenresBtn.textContent = "Todos";
     allGenresBtn.className = "bg-deep-black px-4 py-2 rounded hover:bg-neon-cyan hover:text-midnight-blue transition";
-    allGenresBtn.dataset.genero = "todo";
+    allGenresBtn.dataset.genero = "Todo";
     genreFilters.appendChild(allGenresBtn);
-
+    
     // Crear botones de género
     generosUsados.forEach(g => {
         let btn = document.createElement('button');
@@ -74,34 +76,31 @@ document.addEventListener("DOMContentLoaded", async () => {
         btn.className = "bg-deep-black px-4 py-2 rounded hover:bg-neon-cyan hover:text-midnight-blue transition";
         btn.dataset.genero = g;
         if (getGenreType(g)) btn.classList.add(getGenreType(g));
-        if (generos.includes(g)) btn.classList.add('ring-4', 'ring-white', 'ring-inset', 'bg-neon-cyan', 'text-midnight-blue');
         genreFilters.appendChild(btn);
     });
 
-    // Eventos
-    document.getElementById('typeFilters').addEventListener('click', (e) => {
-        if (e.target.tagName !== "BUTTON") return;
-        let type = e.target.dataset.tipo;
-        let params = new URLSearchParams(window.location.search);
-
-        if (type == "todo" || type == tipo) params.delete("tipo");
-        else params.set("tipo", type);
-
-        window.location.search = params.toString();
+    let genreFilterButtons = document.querySelectorAll('#genreFilters button');
+    genreFilterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            let generoSeleccionado = button.dataset.genero;
+            let seleccionado = button.classList.contains("ring-2") ? false : true;
+            
+            genreFilterButtons.forEach(btn => {
+                let generoActual = btn.dataset.genero;
+                
+                if (generoSeleccionado == "Todo") btn.classList.remove('ring-2', 'ring-white', 'ring-inset', 'bg-neon-cyan', 'text-midnight-blue');
+                else {
+                    if (generoActual == generoSeleccionado && seleccionado) {
+                        btn.classList.add('ring-2', 'ring-white', 'ring-inset', 'bg-neon-cyan', 'text-midnight-blue');
+                    } else if (generoActual == generoSeleccionado) {
+                        btn.classList.remove('ring-2', 'ring-white', 'ring-inset', 'bg-neon-cyan', 'text-midnight-blue');
+                    }
+                }
+            });
+            
+            filterGenre(generoSeleccionado);
+        });
     });
-
-    genreFilters.addEventListener('click', (e) => {
-        if (e.target.tagName !== "BUTTON") return;
-        let genero = e.target.dataset.genero;
-        let params = new URLSearchParams(window.location.search);
-
-        if (genero == "todo") params.delete("genero");
-        else if (generos.includes(genero)) params.delete("genero", genero);
-        else params.append("genero", genero);
-
-        window.location.search = params.toString();
-    });
-
 
     let main = document.querySelector('main');
     if (isEliminar) {
@@ -134,29 +133,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         main.appendChild(button);
         main.insertBefore(h1, main.firstChild);
-    }
-
-    function searchText() {
-        let searchText = searchInput.value.trim().toLowerCase();
-        
-        let urlParams = new URLSearchParams(window.location.search);
-        if (!searchText) {
-            urlParams.delete("titulo");
-            window.location.search = urlParams.toString();
-            return;
-        }
-        
-        urlParams.set("titulo", searchText);
-        window.location.search = urlParams.toString();
-    }
-
-    function cleanFilters(){
-        let urlParams = new URLSearchParams(window.location.search);
-        urlParams.delete("titulo");
-        urlParams.delete("tipo");
-        urlParams.delete("genero");
-
-        window.location.search = urlParams.toString();
     }
 
     async function eliminar(){

@@ -1,5 +1,6 @@
 import { apiGet } from "./api.js";
 import { tailwindConfig } from "./config.js";
+import { logout } from "./logout.js";
 
 export async function initHeader(admin, home = false) {
     tailwind.config = tailwindConfig; // Cargamos la configuración de Tailwind
@@ -15,12 +16,6 @@ export async function initHeader(admin, home = false) {
         let adminButton = document.getElementById("adminButton");
         let adminMenu = document.getElementById("adminMenu");
         toggleMenu(adminButton, adminMenu);
-    }
-
-    if (home) {
-        let filterToggle = document.getElementById("filterToggle");
-        let filterMenu = document.getElementById("filterMenu");
-        toggleMenu(filterToggle, filterMenu);
     }
 }
 
@@ -39,12 +34,12 @@ function toggleMenu(button, menu) {
 
 async function constructHeader(admin, home) {
     let adminAdded = false;
-    const header = document.createElement("header");
+    let header = document.createElement("header");
     header.className = "bg-steel-blue sticky top-0 w-full h-16 p-4 shadow-lg flex items-center justify-between z-10";
 
     // Botón de sidebar (solo si home)
     if (home) {
-        const sidebarToggle = document.createElement("button");
+        let sidebarToggle = document.createElement("button");
         sidebarToggle.id = "sidebarToggle";
         sidebarToggle.className = "bg-steel-blue px-4 py-2 rounded-md text-neon-cyan font-bold";
         sidebarToggle.textContent = "☰";
@@ -52,7 +47,7 @@ async function constructHeader(admin, home) {
     }
 
     // Logo
-    const logo = document.createElement("a");
+    let logo = document.createElement("a");
     logo.href = "home.html";
     logo.className = "text-neon-cyan text-xl font-bold sm:text-2xl me-2";
     logo.textContent = "ManuCast";
@@ -60,33 +55,33 @@ async function constructHeader(admin, home) {
 
     // Extra elementos para home: búsqueda + filtros
     if (home) {
-        const [searchWrapper, filterWrapper] = extraHome();
+        let searchWrapper = extraHome();
         header.appendChild(searchWrapper);
-        header.appendChild(filterWrapper);
     }
 
     // Botón menú hamburguesa
-    const menuToggle = document.createElement("button");
+    let menuToggle = document.createElement("button");
     menuToggle.id = "menuToggle";
-    menuToggle.className = "lg:hidden bg-gray-blue/50 px-4 py-2 rounded-md text-midnight-blue font-bold";
+    menuToggle.className = "lg:hidden bg-gray-blue/50 px-4 py-2 rounded-md text-midnight-blue font-bold ms-2";
     menuToggle.textContent = "☰";
     header.appendChild(menuToggle);
 
     // Menú de navegación
-    const nav = document.createElement("nav");
+    let nav = document.createElement("nav");
     nav.id = "menu";
     nav.className = "hidden absolute top-16 right-4 bg-steel-blue p-4 rounded-md shadow-lg flex flex-col gap-2 lg:flex lg:relative lg:top-auto lg:right-auto lg:bg-transparent lg:p-0 lg:shadow-none lg:flex-row lg:gap-2";
 
     // Enlace Home
-    const homeLink = document.createElement("a");
+    let homeLink = document.createElement("a");
     homeLink.href = "home.html";
     homeLink.className = "text-center w-24 bg-neon-cyan px-4 py-2 mt-2 lg:mt-0 rounded-md text-midnight-blue font-bold hover:scale-105 transition";
     homeLink.textContent = "Home";
     nav.appendChild(homeLink);
 
-    if (await serverAlive() && admin) {
+    //if (await serverAlive() && admin) {
+    if (true) {
         // Admin Dropdown
-        const adminContainer = createDropdownMenu("adminButton", "Admin", [
+        let adminContainer = createDropdownMenu("adminButton", "Admin", [
             { href: "buscar.html", text: "Añadir", top: true },
             { href: "home.html?eliminar=true", text: "Eliminar" },
             { href: "home.html?editar=true", text: "Editar", bottom: true }
@@ -96,24 +91,25 @@ async function constructHeader(admin, home) {
     }
 
     // Profile Dropdown
-    const profileContainer = createDropdownMenu("profileButton", "Perfil", [
-        { href: "#", text: "Cambiar Contraseña", top: true },
-        { href: "#", text: "Cerrar Sesión", bottom: true }
+    let profileContainer = createDropdownMenu("profileButton", "Perfil", [
+        { href: "passwordChange.html", text: "Cambiar Contraseña", top: true },
+        { text: "Cerrar Sesión", bottom: true }
     ]);
+    
     nav.appendChild(profileContainer);
 
     header.appendChild(nav);
-    const target = document.getElementById("app") || document.body;
+    let target = document.getElementById("app") || document.body;
     target.prepend(header);
     return adminAdded;
 }
 
 function extraHome() {
     // 1. Div del input
-    const searchWrapper = document.createElement("div");
+    let searchWrapper = document.createElement("div");
     searchWrapper.className = "flex gap-4 w-1/2";
 
-    const searchInput = document.createElement("input");
+    let searchInput = document.createElement("input");
     searchInput.id = "searchInput";
     searchInput.type = "text";
     searchInput.placeholder = "Buscar...";
@@ -121,59 +117,39 @@ function extraHome() {
 
     searchWrapper.appendChild(searchInput);
 
-    // 2. Div de los botones
-    const filterWrapper = document.createElement("div");
-    filterWrapper.className = "relative flex items-center";
-
-    const filterToggle = document.createElement("button");
-    filterToggle.id = "filterToggle";
-    filterToggle.className = "lg:hidden bg-gray-blue/50 px-4 py-2 rounded-md text-midnight-blue font-bold mx-2";
-    filterToggle.textContent = "🔍";
-
-    const filterMenu = document.createElement("div");
-    filterMenu.id = "filterMenu";
-    filterMenu.className = "hidden absolute mx-2 top-12 right-0 bg-steel-blue p-4 rounded-md shadow-lg lg:relative lg:top-auto lg:right-auto lg:bg-transparent lg:p-0 lg:shadow-none lg:flex lg:gap-2";
-
-    const buscarButton = document.createElement("button");
-    buscarButton.id = "buscarButton";
-    buscarButton.className = "w-24 bg-neon-cyan px-4 py-2 mt-2 lg:mt-0 rounded-md text-midnight-blue font-bold hover:scale-105 transition";
-    buscarButton.textContent = "Buscar";
-
-    const cleanButton = document.createElement("button");
-    cleanButton.id = "cleanButton";
-    cleanButton.className = "w-24 bg-neon-cyan px-4 py-2 mt-2 lg:mt-0 rounded-md text-midnight-blue font-bold hover:scale-105 transition";
-    cleanButton.textContent = "Limpiar";
-
-    filterMenu.appendChild(buscarButton);
-    filterMenu.appendChild(cleanButton);
-
-    filterWrapper.appendChild(filterToggle);
-    filterWrapper.appendChild(filterMenu);
-
-    // ✅ Devolvemos los dos elementos separados, sin agrupar
-    return [searchWrapper, filterWrapper];
+    return searchWrapper;
 }
 
 function createDropdownMenu(buttonId, buttonText, links) {
-    const container = document.createElement("div");
+    let container = document.createElement("div");
     container.className = "relative";
 
-    const button = document.createElement("button");
+    let button = document.createElement("button");
     button.id = buttonId;
     button.className = "w-24 bg-gray-blue/50 px-4 py-2 rounded-md text-midnight-blue font-bold hover:scale-105 transition";
     button.textContent = buttonText;
 
-    const menu = document.createElement("div");
+    let menu = document.createElement("div");
     menu.id = `${buttonId.replace("Button", "Menu")}`;
     menu.className = "absolute right-0 mt-2 w-48 bg-steel-blue text-gray-blue rounded-xl shadow-lg hidden flex flex-col z-50 divide-y divide-gray-blue/30";
 
     links.forEach(({ href, text, top, bottom }) => {
-        const link = document.createElement("a");
-        link.href = href;
-        link.textContent = text;
-        link.className = "block px-4 py-3 font-semibold hover:bg-neon-cyan hover:text-midnight-blue transition" +
-            (top ? " rounded-t-xl" : "") +
-            (bottom ? " rounded-b-xl" : "");
+        let link;
+        if (text == "Cerrar Sesión"){
+            link = document.createElement("button");
+            link.textContent = text;
+            link.className = "block px-4 py-3 font-semibold hover:bg-neon-cyan hover:text-midnight-blue transition" +
+                (top ? " rounded-t-xl" : "") +
+                (bottom ? " rounded-b-xl" : "");
+            link.addEventListener('click', logout);
+        } else {
+            link = document.createElement("a");
+            link.href = href;
+            link.textContent = text;
+            link.className = "block px-4 py-3 font-semibold hover:bg-neon-cyan hover:text-midnight-blue transition" +
+                (top ? " rounded-t-xl" : "") +
+                (bottom ? " rounded-b-xl" : "");
+        }
         menu.appendChild(link);
     });
 

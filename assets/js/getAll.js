@@ -1,4 +1,5 @@
 import { apiGet } from "./api.js";
+import { filterType } from "./filters.js";
 import { mapGeneroInverso } from "./mapGeneros.js";
 
 export async function getAll(){
@@ -111,25 +112,24 @@ export async function getAll(){
         principal.querySelector("div").addEventListener('click', (event) => {
             event.stopPropagation();
             event.preventDefault();
-            let genero = event.target.closest('span').innerText;
+            let generoContainer = event.target.closest('span');
+            let generoSeleccionado = generoContainer.getAttribute("genero");
 
-            if (generos.includes(genero)) params.delete("genero", genero);
-            else params.append("genero", genero);
-            
-            let queryParams = params.toString();
-            window.location.href = `home.html${queryParams ? '?' + queryParams : ''}`;
+            let boton = document.querySelector(`button[data-genero="${generoSeleccionado}"]`);
+            boton.click();
         });
 
         principal.querySelector("p").addEventListener('click', (event) => {
             event.stopPropagation();
             event.preventDefault();
-            let type = event.target.closest('p').innerText;
 
-            if (tipo == type) params.delete("tipo");
-            else params.set("tipo", type);
+            let tipoContainer = event.target.closest('p');
+            let tipoSeleccionado = tipoContainer.innerText;
             
-            let queryParams = params.toString();
-            window.location.href = `home.html${queryParams ? '?' + queryParams : ''}`;
+            if (tipoContainer.classList.contains("ring-2")) tipoSeleccionado = "Todo"; //Si ya estaba seleccionado, metiendo esto hace que se deseleccione
+
+            let boton = document.querySelector(`button[data-tipo="${tipoSeleccionado}"]`);
+            boton.click();
         });
         
         principal.classList.add("movie-card","bg-steel-blue","w-[440px]","p-4","flex-shrink-0","rounded-lg","shadow-lg","flex","flex-col","items-center","hover:brightness-110","hover:saturate-125","transition");
@@ -160,26 +160,24 @@ export async function getAll(){
             clone.querySelector("div").addEventListener('click', (event) => {
                 event.stopPropagation();
                 event.preventDefault();
-                let genero = event.target.closest('span').innerText;
+                let generoContainer = event.target.closest('span');
+                let generoSeleccionado = generoContainer.getAttribute("genero");
 
-                if (generos.includes(genero)) params.delete("genero", genero);
-                else params.append("genero", genero);
-
-                let queryParams = params.toString();
-                window.location.href = `home.html${queryParams ? '?' + queryParams : ''}`;
+                let boton = document.querySelector(`button[data-genero="${generoSeleccionado}"]`);
+                boton.click();
             });
 
             
             clone.querySelector("p").addEventListener('click', (event) => {
                 event.stopPropagation();
                 event.preventDefault();
-                let type = event.target.closest('p').innerText;
+                let tipoContainer = event.target.closest('p');
+                let tipoSeleccionado = tipoContainer.innerText;
                 
-                if (tipo == type) params.delete("tipo");
-                else params.set("tipo", type);
+                if (tipoContainer.classList.contains("ring-2")) tipoSeleccionado = "Todo"; //Si ya estaba seleccionado, metiendo esto hace que se deseleccione
                 
-                let queryParams = params.toString();
-                window.location.href = `home.html${queryParams ? '?' + queryParams : ''}`;
+                let boton = document.querySelector(`button[data-tipo="${tipoSeleccionado}"]`);
+                boton.click();
             });
 
             if (isEliminar) {
