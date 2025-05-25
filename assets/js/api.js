@@ -33,8 +33,12 @@ async function httpRequest(method, url, params = {}, data = null) {
 
             // Manejo específico de errores de autenticación
             if (response.status === 401 || response.status === 403) {
-                window.location.href = "./login.html";
-                return null;
+                if (!window.location.href.endsWith("login.html")) {
+                    window.location.href = "./login.html";
+                    return null;
+                } else {
+                    return response.status;
+                }
             }
 
             throw new Error(`Error ${response.status}: ${errorData.detail || response.statusText}`);
