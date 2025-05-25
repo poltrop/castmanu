@@ -14,10 +14,13 @@ jobs:
       - name: Clonar el repositorio
         uses: actions/checkout@v3
 
-      - name: Eliminar extensiones .html en enlaces
+      - name: Eliminar extensiones .html en enlaces templates
         run: |
-          find templates/ assets/js/ -type f \( -name "*.html" -o -name "*.js" \) -exec sed -i 's/href="\([^"]*\)\.html"/href="\1"/g' {} +
+          find templates/ -type f -name "*.html" -exec sed -i 's/href="\([^"]*\)\.html"/href="\1"/g' {} +
 
+      - name: Eliminar extensiones .html en enlaces js
+        run: |
+          find assets/js/ -type f -name "*.js" -exec sed -i 's/\.html//g' {} +
 
       - name: Reemplazar URL localhost por URL Fly
         run: |
