@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - ManuCast</title>
+    <!-- Favicons -->
+    <link rel="icon" href="../assets/img/favicon/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="../assets/img/favicon/favicon-16x16.png" sizes="16x16" type="image/png">
+    <link rel="icon" href="../assets/img/favicon/favicon-32x32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="../assets/img/favicon/apple-touch-icon.png">
+    <link rel="icon" href="../assets/img/favicon/android-chrome-192x192.png" sizes="192x192" type="image/png">
+    <link rel="icon" href="../assets/img/favicon/android-chrome-512x512.png" sizes="512x512" type="image/png">
+    <!-- Scripts y estilos -->
+    <script src="../assets/tailwind/tailwind 3.4.16.js"></script>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <script src="../assets/sweetalert/sweetalert.js"></script>
+    <script src="../assets/js/main/mainHome.js" type="module"></script>
+</head>
+<body class="bg-midnight-blue text-gray-blue min-h-screen">
+    <div id="app">
+        <div id="loading-spinner" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+            <div class="w-12 h-12 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
+        </div>
+        <div class="flex flex-col md:flex-row min-h-screen m-0">
+            <aside class="md:sticky md:top-16 w-0 md:w-0 h-0 scale-x-0 shrink-0 bg-midnight-blue text-white flex flex-col gap-8 transition-all duration-300 md:overflow-y-auto">
+                <!-- Limpiar filtros -->
+                <div>
+                    <h2 class="text-lg text-center font-bold my-4 text-neon-cyan">Limpiar filtros</h2>
+                    <div class="flex flex-col">
+                        <button id="cleanButton" class="bg-deep-black px-4 py-2 rounded hover:bg-neon-cyan hover:text-midnight-blue transition">Limpiar</button>
+                    </div>
+                </div>
+                <!-- Filtro por tipo -->
+                <div>
+                    <h2 class="text-lg text-center font-bold mb-4 text-neon-cyan">Tipo</h2>
+                    <div id="typeFilters" class="flex flex-col gap-2">
+                        <button data-tipo="Todo" class="bg-deep-black px-4 py-2 rounded hover:bg-neon-cyan hover:text-midnight-blue transition">Todo</button>
+                        <button data-tipo="Pelicula" class="bg-deep-black px-4 py-2 rounded hover:bg-neon-cyan hover:text-midnight-blue transition">Película</button>
+                        <button data-tipo="Serie" class="bg-deep-black px-4 py-2 rounded hover:bg-neon-cyan hover:text-midnight-blue transition">Serie</button>
+                        <button data-tipo="Otro" class="bg-deep-black px-4 py-2 rounded hover:bg-neon-cyan hover:text-midnight-blue transition">Otro</button>
+                    </div>
+                </div>
+                <!-- Filtro por género (generado dinámicamente) -->
+                <div>
+                    <h2 class="text-lg text-center font-bold mb-4 text-neon-cyan">Género</h2>
+                    <div id="genreFilters" class="flex flex-col gap-2 md:h-screen overflow-y-auto"></div>
+                </div>
+            </aside>
+            <main class="p-8 mx-auto flex flex-1 flex-col w-full min-w-0 items-center">
+                <div id="cards" class="flex flex-col gap-6 w-full overflow-x-auto"></div>
+            </main>
+        </div>
+    </div>
+</body>
+</html>

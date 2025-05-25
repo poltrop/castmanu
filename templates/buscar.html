@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Añadir - ManuCast</title>
+    <!-- Favicons -->
+    <link rel="icon" href="../assets/img/favicon/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="../assets/img/favicon/favicon-16x16.png" sizes="16x16" type="image/png">
+    <link rel="icon" href="../assets/img/favicon/favicon-32x32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="../assets/img/favicon/apple-touch-icon.png">
+    <link rel="icon" href="../assets/img/favicon/android-chrome-192x192.png" sizes="192x192" type="image/png">
+    <link rel="icon" href="../assets/img/favicon/android-chrome-512x512.png" sizes="512x512" type="image/png">
+    <!-- Scripts y estilos -->
+    <script src="../assets/tailwind/tailwind 3.4.16.js"></script>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <script src="../assets/js/main/mainBuscar.js" type="module"></script>
+</head>
+<body class="bg-midnight-blue text-gray-blue min-h-screen">
+    <!-- Contenido principal -->
+    <main class="p-8 mx-auto text-center flex flex-col items-center justify-center min-h-[80vh]">
+        <h1 class="text-2xl sm:text-3xl text-neon-cyan font-bold mb-6">Introduce el título para buscar</h1>
+        
+        <input id="tituloInput" type="text" placeholder="Ej: The Office" class="w-full sm:w-2/4 p-3 rounded-md bg-deep-black text-gray-blue focus:ring-2 focus:ring-neon-cyan mb-4" />
+        
+        <button id="buscarBtn" class="bg-neon-cyan text-midnight-blue px-6 py-2 rounded-md font-bold hover:scale-105 transition mb-4">Buscar</button>
+        <div id="errorMsg" class="text-red-400"></div>
+        <div id="resultados" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+        <button id="seleccionarBtn" class="bg-neon-cyan text-midnight-blue px-6 py-2 rounded-md font-bold hover:scale-105 transition mb-8 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:text-gray-600 disabled:hover:scale-100 hidden" disabled>Seleccionar</button>
+        <label class="inline-flex items-center cursor-pointer relative mb-6">
+            <span class="mr-3 text-neon-cyan">Añadir capitulo</span>
+            <div class="relative">
+              <input id="interno" type="checkbox" class="sr-only peer" />
+              <div class="block w-11 h-6 bg-black rounded-full peer-checked:bg-neon-cyan transition"></div>
+              <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-all peer-checked:translate-x-5"></div>
+            </div>
+          </label>
+        <div class="text-sm text-gray-blue mb-2">— o si prefieres —</div>
+        <a href="rellenar.html" id="manualBtn" class="bg-gray-blue/50 text-midnight-blue px-6 py-2 rounded-md font-bold hover:scale-105 transition">Rellenar los datos a mano</a>
+    </main>
+</body>
+</html>

@@ -15,7 +15,12 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Eliminar extensiones .html en enlaces
-        run: find templates/ -name "*.html" -type f -exec sed -i 's/href="\([^"]*\)\.html"/href="\1"/g' {} +
+        run: |
+          find templates/ assets/js/ -type f -name "*.html" -exec sed -i 's/href="\([^"]*\)\.html"/href="\1"/g' {} +
+
+      - name: Reemplazar URL localhost por URL Fly
+        run: |
+          find assets/js/ -type f -exec sed -i 's|http://localhost:8000|https://castmanu.fly.dev|g' {} +
 
       - name: Subir archivos al servidor por FTP
         uses: SamKirkland/FTP-Deploy-Action@4.3.0
@@ -25,7 +30,6 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./  # Carpeta local (desde el root del repo)
           server-dir: /public/  # Cambia esto si tu estructura es diferente
-          exclude: |
-            .git/**
-            .github/**
-            README.md
+          include: |
+            assets/**
+            templates/**
