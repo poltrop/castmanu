@@ -19,13 +19,13 @@
 <body class="bg-midnight-blue text-gray-blue min-h-screen">
     <!-- Contenido principal -->
     <main class="p-8 mx-auto text-center flex flex-col items-center justify-center min-h-[80vh]">
-        <h1 class="text-2xl sm:text-3xl text-neon-cyan font-bold mb-6">Introduce el título para buscar</h1>
+        <h1 class="text-2xl md:text-3xl text-neon-cyan font-bold mb-6">Introduce el título para buscar</h1>
         
-        <input id="tituloInput" type="text" placeholder="Ej: The Office" class="w-full sm:w-2/4 p-3 rounded-md bg-deep-black text-gray-blue focus:ring-2 focus:ring-neon-cyan mb-4" />
+        <input id="tituloInput" type="text" placeholder="Ej: The Office" class="w-full md:w-2/4 p-3 rounded-md bg-deep-black text-gray-blue focus:ring-2 focus:ring-neon-cyan mb-4" />
         
         <button id="buscarBtn" class="bg-neon-cyan text-midnight-blue px-6 py-2 rounded-md font-bold hover:scale-105 transition mb-4">Buscar</button>
         <div id="errorMsg" class="text-red-400"></div>
-        <div id="resultados" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+        <div id="resultados" class="grid grid-cols-1 md:grid-cols-2 3xl:grid-cols-4 gap-6"></div>
         <button id="seleccionarBtn" class="bg-neon-cyan text-midnight-blue px-6 py-2 rounded-md font-bold hover:scale-105 transition mb-8 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:text-gray-600 disabled:hover:scale-100 hidden" disabled>Seleccionar</button>
         <label class="inline-flex items-center cursor-pointer relative mb-6">
             <span class="mr-3 text-neon-cyan">Añadir capitulo</span>

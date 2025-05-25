@@ -85,7 +85,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     async function initPlayer(){
         let main = document.querySelector('main');
         let container = document.createElement('div');
-        container.className = 'w-full lg:w-3/4 flex aspect-[16/9] justify-center';
+        container.className = 'w-full md:w-3/4 flex aspect-[16/9] justify-center';
 
         let video = document.createElement('video');
         video.id = 'videoPlayer';
@@ -295,7 +295,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 'rounded-xl',
                 'text-center',
                 'shadow-md',
-                'lg:w-2/4',
+                'md:w-2/4',
                 'w-full'
             );
     

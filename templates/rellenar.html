@@ -23,15 +23,15 @@
     </div>
     <!-- Contenido principal -->
     <main class="p-8 mx-auto text-center flex flex-col items-center justify-center min-h-[80vh]">
-        <h1 class="text-2xl sm:text-3xl text-neon-cyan font-bold mb-6">Rellena los datos de tu contenido</h1>
+        <h1 class="text-2xl md:text-3xl text-neon-cyan font-bold mb-6">Rellena los datos de tu contenido</h1>
       
         <!-- Título -->
         <label class="block mb-2 font-semibold text-gray-blue">Título</label>
-        <input id="titulo" type="text" placeholder="Título" class="w-full sm:w-2/4 p-3 mb-4 rounded-md bg-deep-black text-gray-blue focus:ring-2 focus:ring-neon-cyan" />
+        <input id="titulo" type="text" placeholder="Título" class="w-full md:w-2/4 p-3 mb-4 rounded-md bg-deep-black text-gray-blue focus:ring-2 focus:ring-neon-cyan" />
       
         <!-- Portada -->
         <label class="block mb-2 font-semibold text-gray-blue">Portada</label>
-        <input id="portada" type="file" accept="image/*" class="w-full sm:w-2/4 p-3 mb-4 bg-deep-black text-gray-blue rounded-md file:bg-neon-cyan file:text-midnight-blue file:font-bold file:px-4 file:py-2 file:rounded-md file:border-0" />
+        <input id="portada" type="file" accept="image/*" class="w-full md:w-2/4 p-3 mb-4 bg-deep-black text-gray-blue rounded-md file:bg-neon-cyan file:text-midnight-blue file:font-bold file:px-4 file:py-2 file:rounded-md file:border-0" />
       
         <!-- Tipo -->
         <label class="block mb-2 font-semibold text-gray-blue">Tipo</label>
@@ -47,7 +47,7 @@
       
         <!-- Géneros -->
         <label class="block mb-2 font-semibold text-gray-blue">Géneros</label>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mb-4 max-w-3xl genre-container">
+        <div class="grid grid-cols-1 md:grid-cols-2 md:grid-cols-3 gap-2 mb-4 max-w-3xl genre-container">
             <label class="block cursor-pointer genre-option py-1 my-1 text-center movie-genre"><input type="checkbox" value="Acción" class="genre-checkbox hidden"> <span>🎬 Acción</span></label>
             <label class="block cursor-pointer genre-option py-1 my-1 text-center serie-genre"><input type="checkbox" value="Acción y Aventura" class="genre-checkbox hidden"> <span>📺 Acción y Aventura</span></label>
             <label class="block cursor-pointer genre-option py-1 my-1 text-center"><input type="checkbox" value="Animación" class="genre-checkbox hidden"> <span>🎬📺 Animación</span></label>
@@ -79,11 +79,11 @@
       
         <!-- Sinopsis -->
         <label class="block mb-2 font-semibold text-gray-blue">Sinopsis</label>
-        <textarea id="sinopsis" placeholder="Sinopsis" rows="5" class="w-full sm:w-2/4 p-3 rounded-md bg-deep-black text-gray-blue focus:ring-2 focus:ring-neon-cyan mb-4 resize-none"></textarea>
+        <textarea id="sinopsis" placeholder="Sinopsis" rows="5" class="w-full md:w-2/4 p-3 rounded-md bg-deep-black text-gray-blue focus:ring-2 focus:ring-neon-cyan mb-4 resize-none"></textarea>
       
         <!-- Archivo -->
         <label class="block mb-2 font-semibold text-gray-blue">Archivo</label>
-        <input id="archivo" type="file" accept="video/*" class="w-full sm:w-2/4 p-3 mb-6 bg-deep-black text-gray-blue rounded-md file:bg-neon-cyan file:text-midnight-blue file:font-bold file:px-4 file:py-2 file:rounded-md file:border-0" />
+        <input id="archivo" type="file" accept="video/*" class="w-full md:w-2/4 p-3 mb-6 bg-deep-black text-gray-blue rounded-md file:bg-neon-cyan file:text-midnight-blue file:font-bold file:px-4 file:py-2 file:rounded-md file:border-0" />
 
         <!-- Botón Final -->
         <button id="subir" class="bg-neon-cyan text-midnight-blue px-6 py-2 rounded-md font-bold hover:scale-105 transition disabled:cursor-not-allowed disabled:bg-gray-400 disabled:text-gray-600 disabled:hover:scale-100">Subir</button>

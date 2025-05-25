@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         let input = document.getElementById("tituloInput");
         input.value = titulo;
         let h1 = document.createElement("h1");
-        h1.classList.add("text-2xl", "sm:text-3xl", "text-neon-cyan", "font-bold", "my-6");
+        h1.classList.add("text-2xl", "md:text-3xl", "text-neon-cyan", "font-bold", "my-6");
         h1.innerText ="Selecciona lo que quieres subir";
         let errorMsg = document.getElementById("errorMsg");
         errorMsg.insertAdjacentElement("afterend",h1);
@@ -87,11 +87,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 div.appendChild(p);
                 div.appendChild(div2);
                 
-                div.classList.add("movie-card", "cursor-pointer", "bg-steel-blue","w-[440px]", "p-4", "rounded-lg", "shadow-lg", "flex", "flex-col", "items-center", "hover:scale-105", "transition");
+                div.classList.add("movie-card", "cursor-pointer", "bg-steel-blue","xl:w-[440px]","md:w-[350px]","w-[260px]", "p-4", "rounded-lg", "shadow-lg", "flex", "flex-col", "items-center", "hover:scale-105", "transition");
                 div.id = serie.id;
                 img.src = !serie.poster ? "../assets/img/poster.jpg" : serie.poster;
                 img.alt = "Portada";
-                img.classList.add("w-full", "h-[600px]", "rounded-md", "shadow-md", "object-cover");
+                img.classList.add("w-full", "xl:h-[600px]", "md:h-[440px]", "h-[300px]", "rounded-md", "shadow-md", "object-cover");
                 h3.classList.add("text-neon-cyan", "text-lg", "font-bold", "mt-2", "text-center");
                 h3.innerText = serie.title;
                 p.classList.add("movie-type", "text-sm", "text-gray-blue", "text-center", "bg-neon-cyan/20", "px-2", "py-1", "rounded-md");
@@ -148,11 +148,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 div.appendChild(p);
                 div.appendChild(div2);
                 
-                div.classList.add("movie-card", "cursor-pointer", "bg-steel-blue","w-[440px]", "p-4", "rounded-lg", "shadow-lg", "flex", "flex-col", "items-center", "hover:scale-105", "transition");
+                div.classList.add("movie-card", "cursor-pointer", "bg-steel-blue","xl:w-[440px]","md:w-[350px]","w-[260px]", "p-4", "rounded-lg", "shadow-lg", "flex", "flex-col", "items-center", "hover:scale-105", "transition");
                 div.id = elemento.id;
                 img.src = !elemento.poster_path ? "../assets/img/poster.jpg" : `https://image.tmdb.org/t/p/w500${elemento.poster_path}`;
                 img.alt = "Portada";
-                img.classList.add("w-full", "h-[600px]", "rounded-md", "shadow-md", "object-cover");
+                img.classList.add("w-full", "xl:h-[600px]", "md:h-[440px]", "h-[300px]", "rounded-md", "shadow-md", "object-cover");
                 h3.classList.add("text-neon-cyan", "text-lg", "font-bold", "mt-2", "text-center");
                 h3.innerText = elemento.name || elemento.title;
                 p.classList.add("movie-type", "text-sm", "text-gray-blue", "text-center", "bg-neon-cyan/20", "px-2", "py-1", "rounded-md");

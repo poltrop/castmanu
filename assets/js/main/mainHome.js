@@ -105,7 +105,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     let main = document.querySelector('main');
     if (isEliminar) {
         let h1 = document.createElement('h1');
-        h1.className = 'text-2xl sm:text-3xl text-neon-cyan font-bold mb-6';
+        h1.className = 'text-2xl md:text-3xl text-neon-cyan font-bold mb-6';
         h1.textContent = 'Selecciona un elemento para eliminar';
 
         let button = document.createElement('button');
@@ -121,7 +121,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     
     if (isEditar) {
         let h1 = document.createElement('h1');
-        h1.className = 'text-2xl sm:text-3xl text-neon-cyan font-bold mb-6';
+        h1.className = 'text-2xl md:text-3xl text-neon-cyan font-bold mb-6';
         h1.textContent = 'Selecciona un elemento para editar';
 
         let button = document.createElement('button');

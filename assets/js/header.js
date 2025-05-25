@@ -49,7 +49,7 @@ async function constructHeader(admin, home) {
     // Logo
     let logo = document.createElement("a");
     logo.href = "home.html";
-    logo.className = "text-neon-cyan text-xl font-bold sm:text-2xl me-2";
+    logo.className = "text-neon-cyan text-xl font-bold md:text-2xl me-2";
     logo.textContent = "ManuCast";
     header.appendChild(logo);
 
@@ -62,19 +62,19 @@ async function constructHeader(admin, home) {
     // Botón menú hamburguesa
     let menuToggle = document.createElement("button");
     menuToggle.id = "menuToggle";
-    menuToggle.className = "lg:hidden bg-gray-blue/50 px-4 py-2 rounded-md text-midnight-blue font-bold ms-2";
+    menuToggle.className = "md:hidden bg-gray-blue/50 px-4 py-2 rounded-md text-midnight-blue font-bold ms-2";
     menuToggle.textContent = "☰";
     header.appendChild(menuToggle);
 
     // Menú de navegación
     let nav = document.createElement("nav");
     nav.id = "menu";
-    nav.className = "hidden absolute top-16 right-4 bg-steel-blue p-4 rounded-md shadow-lg flex flex-col gap-2 lg:flex lg:relative lg:top-auto lg:right-auto lg:bg-transparent lg:p-0 lg:shadow-none lg:flex-row lg:gap-2";
+    nav.className = "hidden absolute top-16 right-4 bg-steel-blue p-4 rounded-md shadow-lg flex flex-col gap-2 md:flex md:relative md:top-auto md:right-auto md:bg-transparent md:p-0 md:shadow-none md:flex-row md:gap-2";
 
     // Enlace Home
     let homeLink = document.createElement("a");
     homeLink.href = "home.html";
-    homeLink.className = "text-center w-24 bg-neon-cyan px-4 py-2 mt-2 lg:mt-0 rounded-md text-midnight-blue font-bold hover:scale-105 transition";
+    homeLink.className = "text-center w-24 bg-neon-cyan px-4 py-2 mt-2 md:mt-0 rounded-md text-midnight-blue font-bold hover:scale-105 transition";
     homeLink.textContent = "Home";
     nav.appendChild(homeLink);
 
@@ -112,7 +112,7 @@ function extraHome() {
     searchInput.id = "searchInput";
     searchInput.type = "text";
     searchInput.placeholder = "Buscar...";
-    searchInput.className = "w-full p-2 rounded-md bg-deep-black text-gray-blue focus:ring-2 focus:ring-neon-cyan";
+    searchInput.className = "w-full me-2 p-2 rounded-md bg-deep-black text-gray-blue focus:ring-2 focus:ring-neon-cyan";
 
     searchWrapper.appendChild(searchInput);
 

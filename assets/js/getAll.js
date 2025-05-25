@@ -43,7 +43,7 @@ export async function getAll(){
         if (isEliminar){
             if (elemento.type == "Serie"){
                 selector = document.createElement("select");
-                selector.classList.add("mb-2", "p-2", "lg:mb-0", "bg-deep-black", "text-center", "text-gray-blue", "rounded-md");
+                selector.classList.add("mb-2", "p-2", "md:mb-0", "bg-deep-black", "text-center", "text-gray-blue", "rounded-md");
                 // Creamos el selector base
                 let opcion = document.createElement("option");
                 opcion.value = '';
@@ -131,10 +131,10 @@ export async function getAll(){
             boton.click();
         });
         
-        principal.classList.add("movie-card","bg-steel-blue","w-[440px]","p-4","flex-shrink-0","rounded-lg","shadow-lg","flex","flex-col","items-center","hover:brightness-110","hover:saturate-125","transition");
+        principal.classList.add("movie-card","bg-steel-blue","md:w-[350px]","w-[260px]","xl:w-[440px]","p-4","flex-shrink-0","rounded-lg","shadow-lg","flex","flex-col","items-center","hover:brightness-110","hover:saturate-125","transition");
         img.src = !elemento.poster ? "../assets/img/poster.jpg" : elemento.poster;
         img.alt = "Portada";
-        img.className = "w-full h-[600px] rounded-md shadow-md object-cover";
+        img.className = "w-full md:h-[440px] h-[300px] xl:h-[600px] rounded-md shadow-md object-cover";
         h3.classList.add("text-neon-cyan", "text-lg", "font-bold", "mt-2", "text-center");
         h3.innerText = elemento.title;
         p.classList.add("movie-type", "text-sm", "text-gray-blue", "text-center", "bg-neon-cyan/20", "px-2", "py-1", "rounded-md", "cursor-pointer");
@@ -232,5 +232,5 @@ function CreateGenreCarrusel (genero) {
     divGenero.className = "w-full";
     div.className = "flex gap-4 overflow-x-auto overflow-y-hidden";
     h3.innerText = genero;
-    h3.className = "text-lg sm:text-xl text-neon-cyan font-bold mb-6";
+    h3.className = "text-lg md:text-xl text-neon-cyan font-bold mb-6";
 }

@@ -8,6 +8,9 @@ export let tailwindConfig = {
                 "gray-blue": "#B0BEC5",
                 "deep-black": "#121212",
             },
+            screens: {
+                "3xl": "1868px",
+            },
         },
     },
 };
