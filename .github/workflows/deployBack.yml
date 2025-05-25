@@ -19,31 +19,23 @@ jobs:
         run: |
           sed -i "/async def setup_pool(self):/,/)/c\
           async def setup_pool(self):\
-                  if not self.pool:\
-                      self.pool = await aiomysql.create_pool(\
-                          host=\"bbdd.castmanu.com\",\
-                          user=\"ddb252198\",\
-                          password=\"$DB_PASSWORD\",\
-                          db=\"ddb252198\",\
-                          charset=\"utf8mb4\",\
-                          autocommit=True,\
-                          minsize=1,\
-                          maxsize=10,\
-                          cursorclass=aiomysql.DictCursor\
-                      )" app/database.py
-
-      - name: Set up Flyctl
-        uses: superfly/flyctl-actions/setup-flyctl@v1
-        with:
-          version: latest
-
-      - name: Authenticate Fly.io
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-        run: fly auth login --access-token $FLY_API_TOKEN
+              if not self.pool:\
+                  self.pool = await aiomysql.create_pool(\
+                      host='bbdd.castmanu.com',\
+                      user='ddb252198',\
+                      password='${DB_PASSWORD}',\
+                      db='ddb252198',\
+                      charset='utf8mb4',\
+                      autocommit=True,\
+                      minsize=1,\
+                      maxsize=10,\
+                      cursorclass=aiomysql.DictCursor\
+                  )" app/database.py
 
       - name: Deploy to Fly.io
+        uses: superfly/flyctl-actions@v1
+        with:
+          args: "deploy --remote-only"
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-        run: fly deploy --remote-only
         working-directory: app

@@ -33,5 +33,11 @@ jobs:
           exclude: |
             app/**
             .github/**
+            .git/**
             DDNS/**
             env/**
+            .gitignore
+            database.sql
+            iniciar.bat
+            README.md
+            swap_server.ps1
