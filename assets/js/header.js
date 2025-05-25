@@ -78,8 +78,7 @@ async function constructHeader(admin, home) {
     homeLink.textContent = "Home";
     nav.appendChild(homeLink);
 
-    //if (await serverAlive() && admin) {
-    if (true) {
+    if (await serverAlive() && admin) {
         // Admin Dropdown
         let adminContainer = createDropdownMenu("adminButton", "Admin", [
             { href: "buscar.html", text: "Añadir", top: true },
