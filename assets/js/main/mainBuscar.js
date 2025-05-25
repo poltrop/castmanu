@@ -126,7 +126,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             let totalPages = busqueda.total_pages; // Lo actualizarás con la respuesta real de la API
             renderPagination(currentPage, totalPages, resultados);
             let div,img,h3,p,div2,span;
-            console.log(busqueda)
             let resultadosFiltrados = busqueda.results.filter(item =>item.media_type === "movie" || item.media_type === "tv");
             if (resultadosFiltrados.length < 1){
                 let div = document.createElement("div");

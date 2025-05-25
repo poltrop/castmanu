@@ -1,5 +1,5 @@
 // Headers por defecto
-const defaultHeaders = {
+let defaultHeaders = {
     "Content-Type": "application/json"
 };
 
@@ -7,15 +7,15 @@ const defaultHeaders = {
 function buildUrl(url, params) {
     if (!params || Object.keys(params).length === 0) return url;
 
-    const queryString = new URLSearchParams(params).toString();
+    let queryString = new URLSearchParams(params).toString();
     return `${url}?${queryString}`;
 }
 
 // Función genérica para realizar solicitudes HTTP
 async function httpRequest(method, url, params = {}, data = null) {
     try {
-        const fullUrl = buildUrl(url, params);
-        const options = {
+        let fullUrl = buildUrl(url, params);
+        let options = {
             method,
             headers: defaultHeaders,
             credentials: "include" // Para enviar cookies en las solicitudes
@@ -25,11 +25,11 @@ async function httpRequest(method, url, params = {}, data = null) {
             options.body = JSON.stringify(data);
         }
 
-        const response = await fetch(fullUrl, options);
+        let response = await fetch(fullUrl, options);
 
         // Verificar si la respuesta es exitosa
         if (!response.ok) {
-            const errorData = await response.json();
+            let errorData = await response.json();
 
             // Manejo específico de errores de autenticación
             if (response.status === 401 || response.status === 403) {
@@ -74,7 +74,7 @@ export async function apiDelete(url, params = {}) {
 }
 
 export async function apiGetServer(url) {
-    const response = await fetch(url, {
+    let response = await fetch(url, {
         method: "Get",
         headers: {
             "Authorization": "Bearer castmanu"
@@ -82,7 +82,7 @@ export async function apiGetServer(url) {
     });
 
     if (!response.ok) {
-        const errorText = await response.json();
+        let errorText = await response.json();
         throw new Error(`Error ${response.status}: ${errorText}`);
     }
 
@@ -90,7 +90,7 @@ export async function apiGetServer(url) {
 }
 
 export async function apiPatchServer(url) {
-    const response = await fetch(url, {
+    let response = await fetch(url, {
         method: "PATCH",
         headers: {
             "Authorization": "Bearer castmanu"
@@ -98,7 +98,7 @@ export async function apiPatchServer(url) {
     });
 
     if (!response.ok) {
-        const errorText = await response.json();
+        let errorText = await response.json();
         throw new Error(`Error ${response.status}: ${errorText}`);
     }
 
@@ -106,10 +106,10 @@ export async function apiPatchServer(url) {
 }
 
 export async function apiPostServer(url, archivo, nombre) {
-    const formData = new FormData();
+    let formData = new FormData();
     formData.append("file", archivo, nombre);
 
-    const response = await fetch(url, {
+    let response = await fetch(url, {
         method: "POST",
         body: formData,
         headers: {
@@ -118,7 +118,7 @@ export async function apiPostServer(url, archivo, nombre) {
     });
 
     if (!response.ok) {
-        const errorText = await response.json();
+        let errorText = await response.json();
         throw new Error(`Error ${response.status}: ${errorText}`);
     }
 
@@ -126,7 +126,7 @@ export async function apiPostServer(url, archivo, nombre) {
 }
 
 export async function apiDeleteServer(url) {
-    const response = await fetch(url, {
+    let response = await fetch(url, {
         method: "DELETE",
         headers: {
             "Authorization": "Bearer castmanu"
@@ -134,7 +134,7 @@ export async function apiDeleteServer(url) {
     });
 
     if (!response.ok) {
-        const errorText = await response.json();
+        let errorText = await response.json();
         throw new Error(`Error ${response.status}: ${errorText}`);
     }
 

@@ -50,7 +50,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
 
             let result = await apiPost("http://localhost:8000/change-password", data);
-            console.log(result);
     
             if (result.success) {
                 passwordMsg.classList.remove("text-red-400");

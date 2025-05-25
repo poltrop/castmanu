@@ -50,7 +50,6 @@ export async function getAll(){
                 opcion.textContent = '-- Selecciona un capítulo --';
                 opcion.selected = true;
                 opcion.disabled = true;
-                console.log(opcion)
                 selector.appendChild(opcion);
                 // Opcion todos
                 opcion = document.createElement("option");

@@ -6,8 +6,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     let status = await autorizado(); 
     if (status != 401 && status != 403) window.location.href = "home.html"
     tailwind.config = tailwindConfig; // Cargamos la configuración de Tailwind
-    const loginForm = document.getElementById("loginForm");
-    const messageContainer = document.getElementById("messageContainer");
+    let loginForm = document.getElementById("loginForm");
+    let messageContainer = document.getElementById("messageContainer");
 
     function showMessage(message, type) {
         messageContainer.innerText = message;
@@ -17,12 +17,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     loginForm.addEventListener("submit", async (event) => {
         event.preventDefault();
-        const username = document.getElementById("username").value.trim();
-        const password = document.getElementById("password").value.trim();
+        let username = document.getElementById("username").value.trim();
+        let password = document.getElementById("password").value.trim();
         if (username == "" || password == "") return;
 
         try {
-            const response = await login(username, password);
+            let response = await login(username, password);
             if (response.success) {
                 showMessage(response.message, "success");
                 setTimeout(() => {

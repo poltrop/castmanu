@@ -186,7 +186,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 method: 'GET',
               });
             if (!existe.ok){
-                console.log(existe);
                 errorMsg.innerText = "El archivo aun no se ha subido y por tanto no se puede borrar. Inténtalo mas tarde";
                 loading.classList.add("hidden");
                 return

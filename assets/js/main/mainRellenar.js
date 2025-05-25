@@ -345,8 +345,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
         
         if (!arraysIguales(selectedGenres, generos)){
-            console.log(selectedGenres);
-            console.log(generos);
             cambioGeneros = selectedGenres;
         }
         
@@ -453,8 +451,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     function arraysIguales(a, b) {
         if (a.length !== b.length) return false;
-        const sortedA = [...a].map(e => e.trim()).sort();
-        const sortedB = [...b].map(e => e.trim()).sort();
+        let sortedA = [...a].map(e => e.trim()).sort();
+        let sortedB = [...b].map(e => e.trim()).sort();
         return sortedA.every((val, i) => val === sortedB[i]);
       }
 });
