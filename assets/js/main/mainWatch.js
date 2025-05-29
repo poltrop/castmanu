@@ -163,14 +163,20 @@ document.addEventListener("DOMContentLoaded", async () => {
             original = `https://castmanu.ddns.net/descargar/${pelicula.type}/${pelicula.title}/original/original.${extension}`;
             original += `?filename=${pelicula.title}.${extension}`;
         }
-
-        let descarga = document.createElement("a");
+        
+        let descarga = document.createElement("button");
         descarga.className = "w-48 bg-neon-cyan px-4 py-2 rounded-md text-midnight-blue font-bold hover:scale-105 transition text-center";
         descarga.innerText = "Descarga el archivo";
-        descarga.href = original;
-        descarga.download = "";
+        descarga.addEventListener("click", async () => {
+            let a = document.createElement("a");
+            a.href = original;
+            a.download = "";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        });
         main.appendChild(descarga);
-
+        
 
         let extraCap = params.get("capitulo") ? `?capitulo=${params.get("capitulo")}` : '';
         
@@ -233,8 +239,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             video.addEventListener("play", () => {
                 if (settings && settings.subs) {
                     let textTracksArray = Array.from(textTracks);
-                    let textTrackToEnable = textTracksArray.find(track => track.src.endsWith(settings.subs));
-                    textTrackToEnable.mode = "showing";
+                    if (settings.subs != "disabled") {
+                        let textTrackToEnable = textTracksArray.find(track => track.src.endsWith(settings.subs));
+                        textTrackToEnable.mode = "showing";
+                    } 
                 }
             }, { once: true })
 
@@ -254,18 +262,23 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
 
             textTracks.addEventListener('change', () => {
+                let activeTrack = null;
+
                 for (let i = 0; i < textTracks.length; i++) {
                     let track = textTracks[i];
                     if (track.mode == 'showing') {
-                        let data = {
-                            id: idGlobal,
-                            capitulo: capituloGlobal, // puede ser null
-                            subs: track.src.split("/").pop()
-                        };
-                        apiPost('http://localhost:8000/update-settings', data);
+                        activeTrack = track;
                         break;
                     }
                 }
+                
+                let data = {
+                    id: idGlobal,
+                    capitulo: capituloGlobal, // puede ser null
+                    subs: activeTrack ? activeTrack.src.split("/").pop() : "disabled"
+                };
+
+                apiPost('http://localhost:8000/update-settings', data);
             });
             
             let duracion = document.getElementById("duracion");
