@@ -64,6 +64,17 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     }
 
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+            let activeElement = document.activeElement;
+
+            if (activeElement.tagName === "INPUT" && activeElement.type === "password") {
+                e.preventDefault();
+                cambiarPassword();
+            }
+        }
+    });
+
     let toggleButtons = document.querySelectorAll("div button");
 
     toggleButtons.forEach(button => {
