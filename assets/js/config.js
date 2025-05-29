@@ -9,7 +9,7 @@ export let tailwindConfig = {
                 "deep-black": "#121212",
             },
             screens: {
-                "3xl": "1868px",
+                "3xl": "1920px",
             },
         },
     },
