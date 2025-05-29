@@ -152,8 +152,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         main.appendChild(container);
 
         let extension = pelicula.extensionOriginal;
+        console.log(extension)
         if (!extension)
             extension = await apiGet(`http://localhost:8000/get-extension-cap/${params.get("id")}/${params.get("capitulo")}`);
+        console.log(extension)
 
         let original = "";
         if (params.get("capitulo")){
