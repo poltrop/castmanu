@@ -26,6 +26,38 @@ jobs:
         run: |
           find assets/js/ -type f -exec sed -i 's|http://localhost:8000|https://castmanu.fly.dev|g' {} +
 
+      - name: Rotar versión JS y CSS (0-9) en HTML
+        run: |
+          echo "Rotando versiones JS y CSS..."
+
+          find templates/ -name "*.html" | while read file; do
+            echo "Procesando $file"
+
+            # Buscar la versión actual (v=N) para JS
+            version_js=$(grep -oP 'src="[^"]+\.js\?v=\K[0-9]' "$file" | head -n 1)
+
+            if [[ "$version_js" =~ ^[0-9]$ ]]; then
+              next_version=$(( (version_js + 1) % 10 ))
+              sed -i "s/\(src=\"[^\"]\+\.js\?v=\)$version_js/\1$next_version/g" "$file"
+              echo "Versión JS cambiada de $version_js a $next_version en $file"
+            else
+              sed -i -E 's/(src="[^"]+\.js)"/\1?v=0"/g' "$file"
+              echo "Versión JS agregada como v=0 en $file"
+            fi
+
+            # Buscar la versión actual (v=N) para CSS
+            version_css=$(grep -oP 'href="[^"]+\.css\?v=\K[0-9]' "$file" | head -n 1)
+
+            if [[ "$version_css" =~ ^[0-9]$ ]]; then
+              next_version=$(( (version_css + 1) % 10 ))
+              sed -i "s/\(href=\"[^\"]\+\.css\?v=\)$version_css/\1$next_version/g" "$file"
+              echo "Versión CSS cambiada de $version_css a $next_version en $file"
+            else
+              sed -i -E 's/(href="[^"]+\.css)"/\1?v=0"/g' "$file"
+              echo "Versión CSS agregada como v=0 en $file"
+            fi
+          done
+
       - name: Subir archivos al servidor por FTP
         uses: SamKirkland/FTP-Deploy-Action@4.3.0
         with:

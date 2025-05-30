@@ -92,6 +92,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         video.id = 'videoPlayer';
         video.className = 'video-js vjs-default-skin vjs-fluid rounded-lg shadow-lg';
         video.setAttribute('controls', '');
+        video.setAttribute('playsinline', '');
+        video.setAttribute('webkit-playsinline', '');
         video.setAttribute('preload', 'auto');
         video.addEventListener('play', startAutoSave);
         video.addEventListener('pause', stopAutoSave);
