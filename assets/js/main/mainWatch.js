@@ -193,6 +193,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             plugins: {
                 chromecast: {}
             },
+            html5: {
+                hls: {
+                    overrideNative: false // ⬅️ Este es el cambio clave
+                },
+                nativeAudioTracks: true,
+                nativeVideoTracks: true
+            }
         });
         
         
