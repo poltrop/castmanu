@@ -152,13 +152,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             }, 500);
         }
 
-        container.appendChild(video);
-        main.appendChild(container);
-
+        
         let extension = pelicula.extensionOriginal;
         if (!extension)
             extension = await apiGet(`http://localhost:8000/get-extension-cap/${params.get("id")}/${params.get("capitulo")}`);
-
+        
         let original = "";
         if (params.get("capitulo")){
             original = `https://castmanu.ddns.net/descargar/${pelicula.type}/${pelicula.title}/${params.get("capitulo")}/original/original.${extension}`;
@@ -181,7 +179,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
         main.appendChild(descarga);
         
-
+        
         let extraCap = params.get("capitulo") ? `?capitulo=${params.get("capitulo")}` : '';
         
         
@@ -230,70 +228,73 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
         }
         let audioTracks = player.audioTracks();
-            let textTracks = player.textTracks();
-
-            if (settings && settings.idioma) {
-                let audioTracksArray = Array.from(audioTracks);
-                let audioTrackToEnable = audioTracksArray.find(track => track.id == settings.idioma);
-                audioTrackToEnable.enabled = true;
+        let textTracks = player.textTracks();
+        
+        if (settings && settings.idioma) {
+            let audioTracksArray = Array.from(audioTracks);
+            let audioTrackToEnable = audioTracksArray.find(track => track.id == settings.idioma);
+            audioTrackToEnable.enabled = true;
+        }
+        
+        video.addEventListener("play", () => {
+            if (settings && settings.subs) {
+                let textTracksArray = Array.from(textTracks);
+                if (settings.subs != "disabled") {
+                    let textTrackToEnable = textTracksArray.find(track => track.src && track.src.endsWith(settings.subs));
+                    textTrackToEnable.mode = "showing";
+                } 
+            }
+        }, { once: true })
+        
+        audioTracks.addEventListener('change', () => {
+            for (let i = 0; i < audioTracks.length; i++) {
+                let track = audioTracks[i];
+                if (track.enabled) {
+                    let data = {
+                        id: idGlobal,
+                        capitulo: capituloGlobal, // puede ser null
+                        idioma: track.id
+                    };
+                    apiPost('http://localhost:8000/update-settings', data);
+                    break;
+                }
+            }
+        });
+        
+        textTracks.addEventListener('change', () => {
+            let activeTrack = null;
+            
+            for (let i = 0; i < textTracks.length; i++) {
+                let track = textTracks[i];
+                if (track.mode == 'showing') {
+                    activeTrack = track;
+                    break;
+                }
             }
             
-            video.addEventListener("play", () => {
-                if (settings && settings.subs) {
-                    let textTracksArray = Array.from(textTracks);
-                    if (settings.subs != "disabled") {
-                        let textTrackToEnable = textTracksArray.find(track => track.src && track.src.endsWith(settings.subs));
-                        textTrackToEnable.mode = "showing";
-                    } 
-                }
-            }, { once: true })
-
-            audioTracks.addEventListener('change', () => {
-                for (let i = 0; i < audioTracks.length; i++) {
-                    let track = audioTracks[i];
-                    if (track.enabled) {
-                        let data = {
-                            id: idGlobal,
-                            capitulo: capituloGlobal, // puede ser null
-                            idioma: track.id
-                        };
-                        apiPost('http://localhost:8000/update-settings', data);
-                        break;
-                    }
-                }
-            });
-
-            textTracks.addEventListener('change', () => {
-                let activeTrack = null;
-
-                for (let i = 0; i < textTracks.length; i++) {
-                    let track = textTracks[i];
-                    if (track.mode == 'showing') {
-                        activeTrack = track;
-                        break;
-                    }
-                }
-                
-                let data = {
-                    id: idGlobal,
-                    capitulo: capituloGlobal, // puede ser null
-                    subs: activeTrack ? activeTrack.src.split("/").pop() : "disabled"
-                };
-
-                apiPost('http://localhost:8000/update-settings', data);
-            });
+            let data = {
+                id: idGlobal,
+                capitulo: capituloGlobal, // puede ser null
+                subs: activeTrack ? activeTrack.src.split("/").pop() : "disabled"
+            };
             
-            let duracion = document.getElementById("duracion");
-            duracion.innerText = `Duración: ${Math.round((player.duration() / 60))} minutos`;
+            apiPost('http://localhost:8000/update-settings', data);
         });
-
-
-        player.poster(posterValue);
-
-        // Manejar error de carga
-        player.on('error', function () {
-            let playerElement = player.el();
-            let container = playerElement.parentNode;
+        
+        let duracion = document.getElementById("duracion");
+        duracion.innerText = `Duración: ${Math.round((player.duration() / 60))} minutos`;
+        
+        container.appendChild(video);
+        main.appendChild(container);
+    });
+    
+    
+    player.poster(posterValue);
+    
+    // Manejar error de carga
+    player.on('error', function () {
+        let playerElement = player.el();
+        let container = playerElement.parentNode;
             playerElement.remove();
             container.classList.remove("aspect-[16/9]");
     

@@ -41,18 +41,18 @@ jobs:
               sed -i "s/\(src=\"[^\"]\+\.js\?v=\)$version_js/\1$next_version/g" "$file"
               echo "Versión JS cambiada de $version_js a $next_version en $file"
             else
+              grep -q 'src="[^"]\+\.js?v=[0-9]"' "$file" || \
               sed -i -E 's/(src="[^"]+\.js)"/\1?v=0"/g' "$file"
               echo "Versión JS agregada como v=0 en $file"
             fi
 
-            # Buscar la versión actual (v=N) para CSS
-            version_css=$(grep -oP 'href="[^"]+\.css\?v=\K[0-9]' "$file" | head -n 1)
-
+            # Para CSS
             if [[ "$version_css" =~ ^[0-9]$ ]]; then
               next_version=$(( (version_css + 1) % 10 ))
               sed -i "s/\(href=\"[^\"]\+\.css\?v=\)$version_css/\1$next_version/g" "$file"
               echo "Versión CSS cambiada de $version_css a $next_version en $file"
             else
+              grep -q 'href="[^"]\+\.css?v=[0-9]"' "$file" || \
               sed -i -E 's/(href="[^"]+\.css)"/\1?v=0"/g' "$file"
               echo "Versión CSS agregada como v=0 en $file"
             fi
