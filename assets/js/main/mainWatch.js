@@ -1,13 +1,14 @@
 import { apiGet, apiGetServer, apiPost, apiPut } from "../api.js";
-import { autorizado } from "../comprobarLogin.js";
 import { initHeader } from "../header.js";
+import { jwt_decode } from "../jwt-decode.js";
 
+if (!localStorage.getItem("token")) window.location.href = "login.html";
 let params = new URLSearchParams(window.location.search);
 if (!params.get("id")) window.location.href = 'home.html';
 
 document.addEventListener("DOMContentLoaded", async () => {
-    let user = await autorizado();
-    initHeader(user.admin == 1);
+    let decoded = jwt_decode(localStorage.getItem("token"));
+    await initHeader(decoded.admin == 1);
     let pelicula = await apiGet(`http://localhost:8000/get-film/${params.get("id")}`)
     if (!pelicula) window.location.href = 'home.html';
 
@@ -152,10 +153,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         main.appendChild(container);
 
         let extension = pelicula.extensionOriginal;
-        console.log(extension)
         if (!extension)
             extension = await apiGet(`http://localhost:8000/get-extension-cap/${params.get("id")}/${params.get("capitulo")}`);
-        console.log(extension)
 
         let original = "";
         if (params.get("capitulo")){

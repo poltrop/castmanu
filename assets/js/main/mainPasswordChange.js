@@ -1,10 +1,11 @@
 import { apiPost } from "../api.js";
-import { autorizado } from "../comprobarLogin.js";
 import { initHeader } from "../header.js";
+import { jwt_decode } from "../jwt-decode.js";
 
+if (!localStorage.getItem("token")) window.location.href = "login.html";
 document.addEventListener("DOMContentLoaded", async () => {
-    let user = await autorizado();
-    initHeader(user.admin == 1);
+    let decoded = jwt_decode(localStorage.getItem("token"));
+    await initHeader(decoded.admin == 1);
 
     let boton = document.getElementById("changePasswordBtn");
     boton.addEventListener("click", cambiarPassword);

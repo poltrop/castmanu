@@ -1,8 +1,3 @@
-// Headers por defecto
-let defaultHeaders = {
-    "Content-Type": "application/json"
-};
-
 // Función para construir la URL con parámetros
 function buildUrl(url, params) {
     if (!params || Object.keys(params).length === 0) return url;
@@ -11,14 +6,27 @@ function buildUrl(url, params) {
     return `${url}?${queryString}`;
 }
 
+function getDefaultHeaders() {
+    let token = localStorage.getItem("token");
+
+    let headers = {
+        "Content-Type": "application/json"
+    };
+
+    if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    return headers;
+}
+
 // Función genérica para realizar solicitudes HTTP
 async function httpRequest(method, url, params = {}, data = null) {
     try {
         let fullUrl = buildUrl(url, params);
         let options = {
             method,
-            headers: defaultHeaders,
-            credentials: "include" // Para enviar cookies en las solicitudes
+            headers: getDefaultHeaders(),
         };
 
         if (data) {
@@ -30,16 +38,6 @@ async function httpRequest(method, url, params = {}, data = null) {
         // Verificar si la respuesta es exitosa
         if (!response.ok) {
             let errorData = await response.json();
-
-            // Manejo específico de errores de autenticación
-            if (response.status === 401 || response.status === 403) {
-                if (!window.location.href.endsWith("login.html")) {
-                    window.location.href = "./login.html";
-                    return null;
-                } else {
-                    return response.status;
-                }
-            }
 
             throw new Error(`Error ${response.status}: ${errorData.detail || response.statusText}`);
         }

@@ -1,10 +1,8 @@
 import { login } from "../login.js";
 import { tailwindConfig } from "../config.js";
-import { autorizado } from "../comprobarLogin.js";
 
+if (localStorage.getItem("token")) window.location.href = "home.html";
 document.addEventListener("DOMContentLoaded", async () => {
-    let status = await autorizado(); 
-    if (status != 401 && status != 403) window.location.href = "home.html"
     tailwind.config = tailwindConfig; // Cargamos la configuración de Tailwind
     let loginForm = document.getElementById("loginForm");
     let messageContainer = document.getElementById("messageContainer");
@@ -24,6 +22,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         try {
             let response = await login(username, password);
             if (response.success) {
+                localStorage.setItem("token", response.token);
                 showMessage(response.message, "success");
                 setTimeout(() => {
                     window.location.href = "home.html";

@@ -25,7 +25,6 @@ server_alive = False
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://127.0.0.1:5500", "http://localhost:5500","https://www.castmanu.com"],
-    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -33,10 +32,7 @@ app.add_middleware(
 # Configuración del JWT
 class Settings(BaseModel):
     authjwt_secret_key: str = "secretcastmanu"
-    authjwt_token_location: set = {"cookies"}
-    authjwt_cookie_csrf_protect: bool = False
-    authjwt_cookie_secure: bool = True
-    authjwt_cookie_samesite: str = "none"
+    authjwt_token_location: set = {"headers"}
 
 
 @AuthJWT.load_config
@@ -128,31 +124,8 @@ async def login(user: User, Authorize: AuthJWT = Depends()):
         expires_time=timedelta(days=30),
         user_claims={"id": usuario["id"], "admin": usuario["admin"]}  # Información adicional
     )
-    response = JSONResponse(usuario)
-    Authorize.set_access_cookies(access_token, response)
 
-    return response
-
-# Endpoint para verificar si el usuario está autenticado
-@app.get("/check-auth")
-async def check_auth(Authorize: AuthJWT = Depends()):
-    Authorize.jwt_required()
-    current_user = Authorize.get_jwt_subject()
-    claims = Authorize.get_raw_jwt()
-    return {
-        "username": current_user,
-        "id": claims.get("id"),
-        "admin": claims.get("admin")
-    }
-
-@app.get("/logout")
-async def logout(Authorize: AuthJWT = Depends()):
-    # Eliminar las cookies de acceso
-    response = JSONResponse({"success": True, "message": "Logout exitoso"})
-    #Authorize.unset_jwt_cookies(response)  # Esto elimina las cookies del cliente
-    response.set_cookie(key="access_token_cookie", value="", expires=0, httponly=True, secure=True, samesite="none", path="/") #Debo hacerlo a mano porque no me respeta los parametros
-    response.set_cookie(key="refresh_token_cookie", value="", expires=0, httponly=True, secure=True, samesite="none", path="/")
-    return response
+    return {"success": True, "message": "Inicio de sesión exitoso!", "token": access_token}
 
 @app.get("/hash-my-password/{password}")
 def hash_my_password(password: str):

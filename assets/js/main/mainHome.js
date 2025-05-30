@@ -1,13 +1,14 @@
 import { apiDelete, apiDeleteServer, apiPost, apiGet } from "../api.js";
-import { autorizado } from "../comprobarLogin.js";
 import { cleanFilters, filterGenre, filterType, searchText } from "../filters.js";
 import { getAll } from "../getAll.js";
 import { initHeader } from "../header.js";
 import { getGenreType } from "../mapGeneros.js";
+import { jwt_decode } from "../jwt-decode.js";
 
+if (!localStorage.getItem("token")) window.location.href = "login.html";
 document.addEventListener("DOMContentLoaded", async () => {
-    let user = await autorizado();
-    await initHeader(user.admin == 1, true);
+    let decoded = jwt_decode(localStorage.getItem("token"));
+    await initHeader(decoded.admin == 1, true);
     // Parte de filtros DESPUES DE CARGAR TODO
     let cleanButton = document.getElementById("cleanButton");
     let searchInput = document.getElementById("searchInput");
