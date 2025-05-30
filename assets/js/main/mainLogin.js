@@ -17,10 +17,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         event.preventDefault();
         let username = document.getElementById("username").value.trim();
         let password = document.getElementById("password").value.trim();
+        let captcha = grecaptcha.getResponse();
         if (username == "" || password == "") return;
 
         try {
-            let response = await login(username, password);
+            let response = await login(username, password, captcha);
             if (response.success) {
                 localStorage.setItem("token", response.token);
                 showMessage(response.message, "success");

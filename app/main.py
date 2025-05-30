@@ -21,6 +21,7 @@ API_SERVER = "castmanu"
 URL_TMDB = "https://api.themoviedb.org/3"
 URL_SERVER = "https://castmanu.ddns.net"
 PREPARAMS_TMDB= f"api_key={API_TMDB}&language=es-ES"
+RECAPTCHA_SECRET_KEY = "6LeEnVArAAAAALNoiloW_GdbeEmshOmSeVEKMcj2"
 server_alive = False
 
 app.add_middleware(
@@ -53,6 +54,7 @@ def authjwt_exception_handler(request, exc):
 class User(BaseModel):
     username: str
     password: str
+    captcha: str
 
 class ChangePassword(BaseModel):
     currentPassword: str
@@ -109,6 +111,22 @@ async def startup_event():
 async def shutdown():
     await db.close_pool()
 
+async def verify_recaptcha(token: str) -> bool:
+    url = "https://www.google.com/recaptcha/api/siteverify"
+    data = {
+        "secret": RECAPTCHA_SECRET_KEY,
+        "response": token,
+    }
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(url, data=data)
+            result = response.json()
+            return result.get("success", False)
+        except Exception as e:
+            print(f"reCAPTCHA verification error: {e}")
+            return False
+
 @app.get("/alive")
 async def alive():
     return is_server_alive()
@@ -116,6 +134,10 @@ async def alive():
 # Endpoint de Login
 @app.post("/login")
 async def login(user: User, Authorize: AuthJWT = Depends()):
+    
+    if not await verify_recaptcha(user.captcha):
+        return {"success": False, "message": "Error verificando captcha"}
+
     # Verificación de usuario en la "base de datos"
     usuario = await db.login(user.username,user.password)
 

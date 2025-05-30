@@ -1,6 +1,6 @@
 import { apiPost } from "./api.js";
-export async function login(username, password) {
-    let data = { username, password };
+export async function login(username, password, captcha) {
+    let data = { username, password, captcha };
     try {
         let response = await apiPost("http://localhost:8000/login", data);
         return response;

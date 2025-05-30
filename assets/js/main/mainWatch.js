@@ -295,7 +295,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             let playerElement = player.el();
             let container = playerElement.parentNode;
             playerElement.remove();
-            container.classList.remove("aspect-[16/9]");
+            container.classList.remove("aspect-[16/9]", "hidden");
     
     
             // Crear el div de error

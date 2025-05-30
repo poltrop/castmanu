@@ -15,6 +15,7 @@
     <script src="../assets/tailwind/tailwind 3.4.16.js"></script>
     <link rel="stylesheet" href="../assets/css/style.css">
     <script src="../assets/js/main/mainLogin.js" type="module"></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body class="min-h-screen flex items-center justify-center bg-no-repeat bg-cover bg-center bg-[url('../assets/img/background-2.jpg')] md:bg-[url('../assets/img/background.jpg')]">
 
@@ -24,7 +25,7 @@
         <form id="loginForm" class="space-y-4">
             <div>
                 <label for="username" class="block text-gray-blue text-sm font-semibold">Usuario</label>
-                <input type="text" id="username" class="w-full p-2 rounded-md bg-deep-black text-gray-blue focus:outline-none focus:ring-2 focus:ring-neon-cyan" placeholder="Nombre de usuario" required>
+                <input type="text" autocapitalize="off" id="username" class="w-full p-2 rounded-md bg-deep-black text-gray-blue focus:outline-none focus:ring-2 focus:ring-neon-cyan" placeholder="Nombre de usuario" required>
             </div>
             <div class="relative">
                 <label for="password" class="block text-gray-blue text-sm font-semibold">Contraseña</label>
@@ -36,6 +37,7 @@
                     </svg>
                 </button>
             </div>
+            <div class="g-recaptcha" data-sitekey="6LeEnVArAAAAAFmgOrtmj9Syge_vzrsY3paa3ezh"></div>
             <p id="messageContainer"></p>
             <button type="submit" class="w-full bg-neon-cyan hover:bg-opacity-80 text-midnight-blue font-bold py-2 px-4 rounded-md transition ease-in-out duration-200">Iniciar Sesión</button>
         </form>
