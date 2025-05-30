@@ -5,6 +5,7 @@ from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.responses import JSONResponse
 from fastapi_jwt_auth import AuthJWT
 from fastapi_jwt_auth.exceptions import AuthJWTException
+import jwt
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import timedelta
@@ -27,6 +28,7 @@ app.add_middleware(
     allow_origins=["http://127.0.0.1:5500", "http://localhost:5500","https://www.castmanu.com"],
     allow_methods=["*"],
     allow_headers=["*"],
+    allow_credentials=True
 )
 
 # Configuración del JWT
@@ -68,6 +70,7 @@ class UpdateSettings(BaseModel):
     tiempo: Optional[int] = None
     idioma: Optional[str] = None
     subs: Optional[str] = None
+    beacon: Optional[str] = None
 
 class FilmType(str, Enum):
     serie = "Serie"
@@ -399,9 +402,12 @@ async def get_settings(id: int, capitulo: Optional[int] = None, Authorize: AuthJ
 @app.post("/update-settings")
 async def update_settings(updateSettings: UpdateSettings, Authorize: AuthJWT = Depends()):
     try:
-        # Verifica que el JWT es válido
-        Authorize.jwt_required()
-        claims = Authorize.get_raw_jwt()
+        claims = None
+        if updateSettings.beacon:
+            claims = get_claims_from_beacon(updateSettings.beacon, Authorize)
+        else:
+            Authorize.jwt_required()
+            claims = Authorize.get_raw_jwt()
         user = claims.get("id")
         resultados = await db.update_settings(user, updateSettings.id, updateSettings.capitulo, updateSettings.tiempo, updateSettings.idioma, updateSettings.subs)
 
@@ -411,3 +417,20 @@ async def update_settings(updateSettings: UpdateSettings, Authorize: AuthJWT = D
         raise HTTPException(status_code=401, detail="No autorizado")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error de servidor: {e}")
+    
+def get_claims_from_beacon(beacon_token_b64: str, Authorize: AuthJWT):
+    try:
+        import base64
+        # Decodificar base64 a token JWT
+        beacon_token = base64.b64decode(beacon_token_b64).decode('utf-8')
+
+        # Obtener secret_key y algoritmo de la configuración
+        secret_key = Authorize._secret_key
+        algorithms = Authorize._decode_algorithms
+
+        # Decodificar el token manualmente con PyJWT
+        claims = jwt.decode(beacon_token, secret_key, algorithms=algorithms)
+
+        return claims
+    except Exception as e:
+        print(f"Error decoding beacon token: {str(e)}")

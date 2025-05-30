@@ -122,11 +122,12 @@ document.addEventListener("DOMContentLoaded", async () => {
             let data = {
                 id: idGlobal,
                 capitulo: capituloGlobal, //puede ser null
-                tiempo: Math.floor(video.currentTime)
+                tiempo: Math.floor(video.currentTime),
+                beacon: btoa(localStorage.getItem("token") || "")
             };
 
             let blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-            navigator.sendBeacon("http://localhost:8000/update-settings", blob); //Mando beacon porque es lo mas rapido que hay para estos casos
+            navigator.sendBeacon("http://localhost:8000/update-settings", blob); //Mando beacon porque es lo mas rapido que hay para estos casosç
         });
 
         function saveProgressToBackend(time) {
@@ -183,22 +184,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         let extraCap = params.get("capitulo") ? `?capitulo=${params.get("capitulo")}` : '';
         
-        let subs = await apiGetServer(`https://castmanu.ddns.net/getSubLanguages/${pelicula.title}/${pelicula.type}${extraCap}`);
-        if (subs.success) {
-            let track;
-            let capitulo = params.get("capitulo") ? `/${params.get("capitulo")}` : '';
-            subs.languages.forEach((sub, index) => {
-                track = document.createElement('track');
-                
-                track.setAttribute('kind', 'subtitles');
-                track.setAttribute('label', sub);
-                track.setAttribute('src', `https://castmanu.ddns.net/videos/${pelicula.type}/${pelicula.title}${capitulo}/subs/subs_${index}.vtt`);
-                track.setAttribute('srclang', mapSubs(sub));
-
-                video.appendChild(track);
-            });
-        }
-
+        
+        
         let player = videojs('videoPlayer', {
             techOrder: ['chromecast','html5'],
             controls: true,
@@ -207,30 +194,42 @@ document.addEventListener("DOMContentLoaded", async () => {
                 chromecast: {}
             },
         });
-
+        
         
         let volumen = await apiGet(`http://localhost:8000/get-volume`);
         let settings = await apiGet(`http://localhost:8000/get-settings/${params.get("id")}${extraCap}`);
         if (!settings.success)
             settings = null;
         else
-            settings = settings.settings;
+        settings = settings.settings;
+    
+    // Establecer fuente HLS
+    player.src({
+        type: 'application/x-mpegURL',
+        src: videoSource
+    });
+    
+    player.ready(function() {
+        if (settings && settings.tiempo)
+            player.currentTime(settings.tiempo);
+        player.volume(volumen.volumen);
+    });
+    
+    player.on('loadedmetadata', async () => {
         
-        // Establecer fuente HLS
-        player.src({
-            type: 'application/x-mpegURL',
-            src: videoSource
-        });
-        
-        player.ready(function() {
-            if (settings && settings.tiempo)
-                player.currentTime(settings.tiempo);
-            player.volume(volumen.volumen);
-        });
-        
-        player.on('loadedmetadata', () => {
-
-            let audioTracks = player.audioTracks();
+        let subs = await apiGetServer(`https://castmanu.ddns.net/getSubLanguages/${pelicula.title}/${pelicula.type}${extraCap}`);
+        if (subs.success) {
+            let capitulo = params.get("capitulo") ? `/${params.get("capitulo")}` : '';
+            subs.languages.forEach((sub, index) => {
+                player.addRemoteTextTrack({
+                    kind: 'subtitles',
+                    src: `https://castmanu.ddns.net/videos/${pelicula.type}/${pelicula.title}${capitulo}/subs/subs_${index}.vtt`,
+                    srclang: mapSubs(sub),
+                    label: sub
+                }, false);
+            });
+        }
+        let audioTracks = player.audioTracks();
             let textTracks = player.textTracks();
 
             if (settings && settings.idioma) {
@@ -243,7 +242,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 if (settings && settings.subs) {
                     let textTracksArray = Array.from(textTracks);
                     if (settings.subs != "disabled") {
-                        let textTrackToEnable = textTracksArray.find(track => track.src.endsWith(settings.subs));
+                        let textTrackToEnable = textTracksArray.find(track => track.src && track.src.endsWith(settings.subs));
                         textTrackToEnable.mode = "showing";
                     } 
                 }
