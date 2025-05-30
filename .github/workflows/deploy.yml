@@ -34,25 +34,33 @@ jobs:
             echo "Procesando $file"
 
             # Versión JS
-            version_js=$(sed -n 's/.*src="[^"]*\.js?v=\([0-9]\)".*/\1/p' "$file" | head -n1)
+            version_js=$(grep -oE 'src="[^"]+\.js\?v=[0-9]' "$file" | sed -E 's/.*\?v=([0-9])/\1/' | head -n1)
             if [[ "$version_js" =~ ^[0-9]$ ]]; then
               next_version=$(( (version_js + 1) % 10 ))
               sed -i "s/\(src=\"[^\"]*\.js?v=\)$version_js/\1$next_version/g" "$file"
               echo "Versión JS cambiada de $version_js a $next_version en $file"
             else
-              sed -i -E 's/(src="[^"]+\.js)"/\1?v=0"/g' "$file"
-              echo "Agregando versión v=0 a JS en $file"
+              if grep -qE 'src="[^"]+\.js\?v=[0-9]' "$file"; then
+                echo "Versión JS ya presente en $file"
+              else
+                sed -i -E 's/(src="[^"]+\.js)"/\1?v=0"/g' "$file"
+                echo "Agregando versión v=0 a JS en $file"
+              fi
             fi
 
             # Versión CSS
-            version_css=$(sed -n 's/.*href="[^"]*\.css?v=\([0-9]\)".*/\1/p' "$file" | head -n1)
+            version_css=$(grep -oE 'href="[^"]+\.css\?v=[0-9]' "$file" | sed -E 's/.*\?v=([0-9])/\1/' | head -n1)
             if [[ "$version_css" =~ ^[0-9]$ ]]; then
               next_version=$(( (version_css + 1) % 10 ))
               sed -i "s/\(href=\"[^\"]*\.css?v=\)$version_css/\1$next_version/g" "$file"
               echo "Versión CSS cambiada de $version_css a $next_version en $file"
             else
-              sed -i -E 's/(href="[^"]+\.css)"/\1?v=0"/g' "$file"
-              echo "Agregando versión v=0 a CSS en $file"
+              if grep -qE 'href="[^"]+\.css\?v=[0-9]' "$file"; then
+                echo "Versión CSS ya presente en $file"
+              else
+                sed -i -E 's/(href="[^"]+\.css)"/\1?v=0"/g' "$file"
+                echo "Agregando versión v=0 a CSS en $file"
+              fi
             fi
 
           done
