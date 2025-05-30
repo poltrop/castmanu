@@ -26,43 +26,25 @@ jobs:
         run: |
           find assets/js/ -type f -exec sed -i 's|http://localhost:8000|https://castmanu.fly.dev|g' {} +
 
-      - name: Rotar versión JS y CSS (0-9) en HTML
+      - name: Rotar versión JS y CSS con timestamp directo
         run: |
-          echo "Rotando versiones JS y CSS..."
+          echo "Rotando versiones JS y CSS con timestamp..."
 
+          # Generar versión con formato dd.MM.yyyy.HH.mm
+          version=$(date +"%d.%m.%Y.%H.%M")
+          echo "Versión generada: $version"
+
+          # Procesar cada archivo HTML directamente
           find templates/ -name "*.html" | while read file; do
             echo "Procesando $file"
 
-            # Versión JS
-            version_js=$(grep -oE 'src="[^"]+\.js\?v=[0-9]' "$file" | sed -E 's/.*\?v=([0-9])/\1/' | head -n1)
-            if [[ "$version_js" =~ ^[0-9]$ ]]; then
-              next_version=$(( (version_js + 1) % 10 ))
-              sed -i "s/\(src=\"[^\"]*\.js?v=\)$version_js/\1$next_version/g" "$file"
-              echo "Versión JS cambiada de $version_js a $next_version en $file"
-            else
-              if grep -qE 'src="[^"]+\.js\?v=[0-9]' "$file"; then
-                echo "Versión JS ya presente en $file"
-              else
-                sed -i -E 's/(src="[^"]+\.js)"/\1?v=0"/g' "$file"
-                echo "Agregando versión v=0 a JS en $file"
-              fi
-            fi
+            # Reemplazar o agregar versión en archivos .js
+            sed -i -E "s|(src=\"[^\"]+\.js)(\?v=[^\"]*)?\"|\1?v=$version\"|g" "$file"
+            echo "Versión JS actualizada a $version en $file"
 
-            # Versión CSS
-            version_css=$(grep -oE 'href="[^"]+\.css\?v=[0-9]' "$file" | sed -E 's/.*\?v=([0-9])/\1/' | head -n1)
-            if [[ "$version_css" =~ ^[0-9]$ ]]; then
-              next_version=$(( (version_css + 1) % 10 ))
-              sed -i "s/\(href=\"[^\"]*\.css?v=\)$version_css/\1$next_version/g" "$file"
-              echo "Versión CSS cambiada de $version_css a $next_version en $file"
-            else
-              if grep -qE 'href="[^"]+\.css\?v=[0-9]' "$file"; then
-                echo "Versión CSS ya presente en $file"
-              else
-                sed -i -E 's/(href="[^"]+\.css)"/\1?v=0"/g' "$file"
-                echo "Agregando versión v=0 a CSS en $file"
-              fi
-            fi
-
+            # Reemplazar o agregar versión en archivos .css
+            sed -i -E "s|(href=\"[^\"]+\.css)(\?v=[^\"]*)?\"|\1?v=$version\"|g" "$file"
+            echo "Versión CSS actualizada a $version en $file"
           done
 
       - name: Subir archivos al servidor por FTP
