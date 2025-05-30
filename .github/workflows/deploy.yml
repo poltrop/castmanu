@@ -30,29 +30,29 @@ jobs:
         run: |
           echo "Rotando versiones JS y CSS..."
 
-          find templates/ -name "*.html" | while IFS= read -r file; do
+          find templates/ -name "*.html" | while read file; do
             echo "Procesando $file"
 
-            # JS
-            version_js=$(grep -oP 'src="[^"]+\.js\?v=\K[0-9]' "$file" | head -n 1)
+            # Versión JS
+            version_js=$(sed -n 's/.*src="[^"]*\.js?v=\([0-9]\)".*/\1/p' "$file" | head -n1)
             if [[ "$version_js" =~ ^[0-9]$ ]]; then
-              next_version_js=$(( (version_js + 1) % 10 ))
-              echo "JS versión actual: $version_js, siguiente: $next_version_js"
-              sed -i "s/\(src=\"[^\"]\+\.js\?v=\)$version_js/\1$next_version_js/g" "$file"
+              next_version=$(( (version_js + 1) % 10 ))
+              sed -i "s/\(src=\"[^\"]*\.js?v=\)$version_js/\1$next_version/g" "$file"
+              echo "Versión JS cambiada de $version_js a $next_version en $file"
             else
-              echo "Agregando versión v=0 a JS"
-              grep -q 'src="[^"]\+\.js?v=[0-9]"' "$file" || sed -i -E 's/(src="[^"]+\.js)"/\1?v=0"/g' "$file"
+              sed -i -E 's/(src="[^"]+\.js)"/\1?v=0"/g' "$file"
+              echo "Agregando versión v=0 a JS en $file"
             fi
 
-            # CSS
-            version_css=$(grep -oP 'href="[^"]+\.css\?v=\K[0-9]' "$file" | head -n 1)
+            # Versión CSS
+            version_css=$(sed -n 's/.*href="[^"]*\.css?v=\([0-9]\)".*/\1/p' "$file" | head -n1)
             if [[ "$version_css" =~ ^[0-9]$ ]]; then
-              next_version_css=$(( (version_css + 1) % 10 ))
-              echo "CSS versión actual: $version_css, siguiente: $next_version_css"
-              sed -i "s/\(href=\"[^\"]\+\.css\?v=\)$version_css/\1$next_version_css/g" "$file"
+              next_version=$(( (version_css + 1) % 10 ))
+              sed -i "s/\(href=\"[^\"]*\.css?v=\)$version_css/\1$next_version/g" "$file"
+              echo "Versión CSS cambiada de $version_css a $next_version en $file"
             else
-              echo "Agregando versión v=0 a CSS"
-              grep -q 'href="[^"]\+\.css?v=[0-9]"' "$file" || sed -i -E 's/(href="[^"]+\.css)"/\1?v=0"/g' "$file"
+              sed -i -E 's/(href="[^"]+\.css)"/\1?v=0"/g' "$file"
+              echo "Agregando versión v=0 a CSS en $file"
             fi
 
           done
