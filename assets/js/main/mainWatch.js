@@ -100,23 +100,38 @@ document.addEventListener("DOMContentLoaded", async () => {
         video.setAttribute('playsinline', '');
         video.setAttribute('webkit-playsinline', '');
         video.setAttribute('preload', 'auto');
-        video.width = 640;
-        video.height = 360;
         video.poster = posterValue;
 
-        // Añadir subtítulos
-        let subs = await apiGetServer(`https://castmanu.ddns.net/getSubLanguages/${pelicula.title}/${pelicula.type}${params.get("capitulo") ? `?capitulo=${params.get("capitulo")}` : ''}`);
-        if (subs.success) {
-            let capitulo = params.get("capitulo") ? `/${params.get("capitulo")}` : '';
-            subs.languages.forEach((sub, index) => {
-                let track = document.createElement('track');
-                track.kind = 'subtitles';
-                track.label = sub;
-                track.srclang = mapSubs(sub);
-                track.src = `https://castmanu.ddns.net/videos/${pelicula.type}/${pelicula.title}${capitulo}/subs/subs_${index}.vtt`;
-                video.appendChild(track);
+        
+        try{
+            // Añadir subtítulos
+            let subs = await apiGetServer(`https://castmanu.ddns.net/getSubLanguages/${pelicula.title}/${pelicula.type}${params.get("capitulo") ? `?capitulo=${params.get("capitulo")}` : ''}`);
+            if (subs.success) {
+                let capitulo = params.get("capitulo") ? `/${params.get("capitulo")}` : '';
+                subs.languages.forEach((sub, index) => {
+                    let track = document.createElement('track');
+                    track.kind = 'subtitles';
+                    track.label = sub;
+                    track.srclang = mapSubs(sub);
+                    track.src = `https://castmanu.ddns.net/videos/${pelicula.type}/${pelicula.title}${capitulo}/subs/subs_${index}.vtt`;
+                    video.appendChild(track);
+                });
+            }
+
+            let descarga = document.createElement("button");
+            descarga.className = "w-48 bg-neon-cyan px-4 py-2 rounded-md text-midnight-blue font-bold hover:scale-105 transition text-center";
+            descarga.innerText = "Descarga el archivo";
+            descarga.addEventListener("click", async () => {
+                let a = document.createElement("a");
+                a.href = original;
+                a.download = "";
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
             });
-        }
+            main.appendChild(descarga);
+
+        } catch {}
 
         video.addEventListener('error', function () {
             let container = video.parentNode;
@@ -248,36 +263,39 @@ document.addEventListener("DOMContentLoaded", async () => {
             original += `?filename=${pelicula.title}.${extension}`;
         }
 
-        let descarga = document.createElement("button");
-        descarga.className = "w-48 bg-neon-cyan px-4 py-2 rounded-md text-midnight-blue font-bold hover:scale-105 transition text-center";
-        descarga.innerText = "Descarga el archivo";
-        descarga.addEventListener("click", async () => {
-            let a = document.createElement("a");
-            a.href = original;
-            a.download = "";
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-        });
-        main.appendChild(descarga);
-
+        
         let extraCap = params.get("capitulo") ? `?capitulo=${params.get("capitulo")}` : '';
+        
+        try{
+            let subs = await apiGetServer(`https://castmanu.ddns.net/getSubLanguages/${pelicula.title}/${pelicula.type}${extraCap}`);
+            if (subs.success) {
+                let track;
+                let capitulo = params.get("capitulo") ? `/${params.get("capitulo")}` : '';
+                subs.languages.forEach((sub, index) => {
+                    track = document.createElement('track');
+                    
+                    track.setAttribute('kind', 'subtitles');
+                    track.setAttribute('label', sub);
+                    track.setAttribute('src', `https://castmanu.ddns.net/videos/${pelicula.type}/${pelicula.title}${capitulo}/subs/subs_${index}.vtt`);
+                    track.setAttribute('srclang', mapSubs(sub));
+                    
+                    video.appendChild(track);
+                });
+            }
 
-        let subs = await apiGetServer(`https://castmanu.ddns.net/getSubLanguages/${pelicula.title}/${pelicula.type}${extraCap}`);
-        if (subs.success) {
-            let track;
-            let capitulo = params.get("capitulo") ? `/${params.get("capitulo")}` : '';
-            subs.languages.forEach((sub, index) => {
-                track = document.createElement('track');
-
-                track.setAttribute('kind', 'subtitles');
-                track.setAttribute('label', sub);
-                track.setAttribute('src', `https://castmanu.ddns.net/videos/${pelicula.type}/${pelicula.title}${capitulo}/subs/subs_${index}.vtt`);
-                track.setAttribute('srclang', mapSubs(sub));
-
-                video.appendChild(track);
+            let descarga = document.createElement("button");
+            descarga.className = "w-48 bg-neon-cyan px-4 py-2 rounded-md text-midnight-blue font-bold hover:scale-105 transition text-center";
+            descarga.innerText = "Descarga el archivo";
+            descarga.addEventListener("click", async () => {
+                let a = document.createElement("a");
+                a.href = original;
+                a.download = "";
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
             });
-        }
+            main.appendChild(descarga);
+        } catch {}
 
         let player = videojs('videoPlayer', {
             techOrder: ['chromecast', 'html5'],
