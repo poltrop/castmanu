@@ -19,7 +19,7 @@ class Castmanu:
                 charset='utf8mb4',
                 autocommit=True,
                 minsize=1,
-                maxsize=10,
+                maxsize=3,
                 cursorclass=aiomysql.DictCursor
             )
 
