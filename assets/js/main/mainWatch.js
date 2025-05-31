@@ -299,6 +299,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         // Manejar error de carga
         player.on('error', function () {
+            const error = player.error();
+            const errorBox = document.getElementById('video-error');
+            errorBox.textContent = `⚠️ Error del reproductor: ${error.message || 'Código ' + error.code}`;
             let playerElement = player.el();
             let container = playerElement.parentNode;
             playerElement.remove();
