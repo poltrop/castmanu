@@ -29,6 +29,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     window.location.href = "home.html";
                 }, 1000);
             } else {
+                grecaptcha.reset();
                 showMessage(response.message, "error");
             }
         } catch (error) {
