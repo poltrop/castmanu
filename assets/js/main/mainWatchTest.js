@@ -102,6 +102,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         video.setAttribute('preload', 'auto');
         video.width = 640;
         video.height = 360;
+        video.poster = posterValue;
 
         // Añadir subtítulos
         let subs = await apiGetServer(`https://castmanu.ddns.net/getSubLanguages/${pelicula.title}/${pelicula.type}${params.get("capitulo") ? `?capitulo=${params.get("capitulo")}` : ''}`);
@@ -155,117 +156,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         container.appendChild(video);
         main.appendChild(container);
 
-        // Carga configuración previa
-        let volumen = await apiGet(`http://localhost:8000/get-volume`);
-        let settings = await apiGet(`http://localhost:8000/get-settings/${params.get("id")}${params.get("capitulo") ? `?capitulo=${params.get("capitulo")}` : ''}`);
-        if (!settings.success)
-            settings = null;
-        else
-            settings = settings.settings;
-
-        video.volume = volumen?.volumen || 1;
-
-        if (settings && settings.tiempo) {
-            video.currentTime = settings.tiempo;
-        }
-
         video.addEventListener('loadedmetadata', async () => {
-            let textTracks = video.textTracks;
-
-            if (settings && settings.subs) {
-                for (let i = 0; i < textTracks.length; i++) {
-                    if (settings.subs !== "disabled" && textTracks[i].src && textTracks[i].src.endsWith(settings.subs)) {
-                        textTracks[i].mode = "showing";
-                    } else {
-                        textTracks[i].mode = "hidden";
-                    }
-                }
-            }
-
-            // Escuchar cambios en subtítulos para guardar configuración
-            for (let i = 0; i < textTracks.length; i++) {
-                textTracks[i].addEventListener('change', () => {
-                    let activeTrack = null;
-                    for (let j = 0; j < textTracks.length; j++) {
-                        if (textTracks[j].mode === 'showing') {
-                            activeTrack = textTracks[j];
-                            break;
-                        }
-                    }
-                    apiPost('http://localhost:8000/update-settings', {
-                        id: idGlobal,
-                        capitulo: capituloGlobal,
-                        subs: activeTrack ? activeTrack.src.split("/").pop() : "disabled"
-                    });
-                });
-            }
-
             let duracion = document.getElementById("duracion");
             duracion.innerText = `Duración: ${Math.round((video.duration / 60))} minutos`;
             video.parentNode.classList.remove("hidden");
         });
-
-        // Guardar progreso cada 30s
-        let intervalId;
-        video.addEventListener('play', () => {
-            intervalId = setInterval(() => {
-                saveProgressToBackend(Math.floor(video.currentTime));
-            }, 30000);
-        });
-
-        video.addEventListener('pause', () => clearInterval(intervalId));
-        video.addEventListener('ended', () => clearInterval(intervalId));
-
-        // Enviar beacon antes de salir
-        window.addEventListener('beforeunload', () => {
-            if (video.ended)
-                video.currentTime = 0;
-
-            let data = {
-                id: idGlobal,
-                capitulo: capituloGlobal,
-                tiempo: Math.floor(video.currentTime),
-                beacon: btoa(localStorage.getItem("token") || "")
-            };
-            let blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-            navigator.sendBeacon("http://localhost:8000/update-settings", blob);
-        });
-
-        // Actualizar volumen
-        let volumeChangeTimeout;
-        video.addEventListener('volumechange', () => {
-            clearTimeout(volumeChangeTimeout);
-            volumeChangeTimeout = setTimeout(() => {
-                let volume = video.volume.toFixed(2);
-                apiPut(`http://localhost:8000/update-volume`, { volumen: volume });
-            }, 500);
-        });
-
-        // Función para guardar progreso
-        function saveProgressToBackend(time) {
-            apiPost(`http://localhost:8000/update-settings`, {
-                id: idGlobal,
-                capitulo: capituloGlobal,
-                tiempo: time
-            });
-        }
-
-        // Subtítulos: escuchar cambio manual y guardar configuración
-        video.textTracks.addEventListener('change', () => {
-            let activeTrack = null;
-            for (let i = 0; i < video.textTracks.length; i++) {
-                if (video.textTracks[i].mode === 'showing') {
-                    activeTrack = video.textTracks[i];
-                    break;
-                }
-            }
-            apiPost('http://localhost:8000/update-settings', {
-                id: idGlobal,
-                capitulo: capituloGlobal,
-                subs: activeTrack ? activeTrack.src.split('/').pop() : 'disabled'
-            });
-        });
-
     }
 
     async function initPlayer() {
