@@ -135,8 +135,8 @@ async def alive():
 @app.post("/login")
 async def login(user: User, Authorize: AuthJWT = Depends()):
     
-    if not await verify_recaptcha(user.captcha):
-        return {"success": False, "message": "Error verificando captcha"}
+    #if not await verify_recaptcha(user.captcha):
+    #    return {"success": False, "message": "Error verificando captcha"}
 
     # Verificación de usuario en la "base de datos"
     usuario = await db.login(user.username,user.password)
