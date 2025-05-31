@@ -101,7 +101,22 @@ document.addEventListener("DOMContentLoaded", async () => {
         video.setAttribute('webkit-playsinline', '');
         video.setAttribute('preload', 'auto');
         video.poster = posterValue;
-
+        video.src = videoSource;
+        container.appendChild(video);
+        main.appendChild(container);
+        
+        let extension = pelicula.extensionOriginal;
+        if (!extension)
+            extension = await apiGet(`http://localhost:8000/get-extension-cap/${params.get("id")}/${params.get("capitulo")}`);
+        
+        let original = "";
+        if (params.get("capitulo")) {
+            original = `https://castmanu.ddns.net/descargar/${pelicula.type}/${pelicula.title}/${params.get("capitulo")}/original/original.${extension}`;
+            original += `?filename=${pelicula.title} - capitulo ${params.get("capitulo")}.${extension}`;
+        } else {
+            original = `https://castmanu.ddns.net/descargar/${pelicula.type}/${pelicula.title}/original/original.${extension}`;
+            original += `?filename=${pelicula.title}.${extension}`;
+        }
         
         try{
             // Añadir subtítulos
@@ -132,8 +147,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             main.appendChild(descarga);
 
         } catch {}
-
-        video.addEventListener('error', function () {
+        
+        function mostrarErrorVideo(video) {
             let container = video.parentNode;
             container.classList.remove("aspect-[16/9]", "hidden");
             video.remove();
@@ -165,17 +180,22 @@ document.addEventListener("DOMContentLoaded", async () => {
             errorDiv.appendChild(title);
             errorDiv.appendChild(message);
             container.appendChild(errorDiv);
-        });
+        }
 
-        video.src = videoSource;
-        container.appendChild(video);
-        main.appendChild(container);
+        let errorTimeout = setTimeout(() => {
+            // Si el video no tiene metadatos cargados, asumimos que falló
+            if (video.readyState < 1) {
+                mostrarErrorVideo(video);
+            }
+        }, 5000);
 
         video.addEventListener('loadedmetadata', async () => {
+            clearTimeout(errorTimeout);
             let duracion = document.getElementById("duracion");
             duracion.innerText = `Duración: ${Math.round((video.duration / 60))} minutos`;
             video.parentNode.classList.remove("hidden");
         });
+
     }
 
     async function initPlayer() {
