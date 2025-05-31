@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>HLS Nativo en Safari</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    video { width: 100%; max-width: 800px; height: auto; }
+  </style>
+</head>
+<body>
+  <h2>HLS Nativo (Safari / iOS compatible)</h2>
+
+  <video controls playsinline crossorigin="anonymous">
+    <source src="https://castmanu.ddns.net/videos/Serie/Doraemon,%20el%20gato%20c%C3%B3sm/3/master.m3u8" type="application/vnd.apple.mpegurl">
+
+    <track kind="subtitles" label="Español" srclang="es" src="https://castmanu.ddns.net/videos/Serie/Doraemon,%20el%20gato%20c%C3%B3sm/3/subs/subs_0.vtt">
+    <track kind="subtitles" label="Catalán" srclang="ca" src="https://castmanu.ddns.net/videos/Serie/Doraemon,%20el%20gato%20c%C3%B3sm/3/subs/subs_1.vtt">
+    <track kind="subtitles" label="Gallego" srclang="gl" src="https://castmanu.ddns.net/videos/Serie/Doraemon,%20el%20gato%20c%C3%B3sm/3/subs/subs_2.vtt">
+    <track kind="subtitles" label="Euskera" srclang="eu" src="https://castmanu.ddns.net/videos/Serie/Doraemon,%20el%20gato%20c%C3%B3sm/3/subs/subs_3.vtt">
+  </video>
+
+</body>
+</html>

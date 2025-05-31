@@ -216,13 +216,17 @@ document.addEventListener("DOMContentLoaded", async () => {
         src: videoSource
     });
     
+    const errorBox = document.getElementById('video-error');
+    //errorBox.textContent = `⚠️ Error del reproductor: ${error.message || 'Código ' + error.code}`;
     player.ready(function() {
+        errorBox.textContent += `Reproductor cargado`;
         if (settings && settings.tiempo)
             player.currentTime(settings.tiempo);
         player.volume(volumen.volumen);
     });
     
     player.on('loadedmetadata', async () => {
+        errorBox.textContent += `Dentro del metadata`;
         let subs = await apiGetServer(`https://castmanu.ddns.net/getSubLanguages/${pelicula.title}/${pelicula.type}${extraCap}`);
         if (subs.success) {
             let capitulo = params.get("capitulo") ? `/${params.get("capitulo")}` : '';
@@ -233,6 +237,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     srclang: mapSubs(sub),
                     label: sub
                 }, false);
+                errorBox.textContent += `Añadido sub ${sub}`;
             });
         }
         let audioTracks = player.audioTracks();
@@ -299,9 +304,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         // Manejar error de carga
         player.on('error', function () {
-            const error = player.error();
-            const errorBox = document.getElementById('video-error');
-            errorBox.textContent = `⚠️ Error del reproductor: ${error.message || 'Código ' + error.code}`;
             let playerElement = player.el();
             let container = playerElement.parentNode;
             playerElement.remove();
