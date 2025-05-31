@@ -147,50 +147,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             main.appendChild(descarga);
 
         } catch {}
-        
-        function mostrarErrorVideo(video) {
-            let container = video.parentNode;
-            container.classList.remove("aspect-[16/9]", "hidden");
-            video.remove();
-
-            // Crear el div de error
-            let errorDiv = document.createElement('div');
-            errorDiv.classList.add(
-                'bg-gray-blue/20',
-                'border',
-                'border-neon-cyan/30',
-                'text-gray-blue',
-                'px-6',
-                'py-8',
-                'rounded-xl',
-                'text-center',
-                'shadow-md',
-                'md:w-2/4',
-                'w-full'
-            );
-
-            let title = document.createElement('p');
-            title.textContent = 'No se pudo cargar el video';
-            title.classList.add('text-lg', 'font-semibold', 'mb-2');
-
-            let message = document.createElement('p');
-            message.textContent = 'El video se está procesando. Inténtalo más tarde';
-            message.classList.add('text-sm');
-
-            errorDiv.appendChild(title);
-            errorDiv.appendChild(message);
-            container.appendChild(errorDiv);
-        }
-
-        let errorTimeout = setTimeout(() => {
-            // Si el video no tiene metadatos cargados, asumimos que falló
-            if (video.readyState < 1) {
-                mostrarErrorVideo(video);
-            }
-        }, 5000);
 
         video.addEventListener('loadedmetadata', async () => {
-            clearTimeout(errorTimeout);
             let duracion = document.getElementById("duracion");
             duracion.innerText = `Duración: ${Math.round((video.duration / 60))} minutos`;
             video.parentNode.classList.remove("hidden");
