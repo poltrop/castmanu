@@ -106,6 +106,57 @@ document.addEventListener("DOMContentLoaded", async () => {
         container.appendChild(video);
         main.appendChild(container);
 
+        
+        
+        let extension = pelicula.extensionOriginal;
+        if (!extension)
+            extension = await apiGet(`http://localhost:8000/get-extension-cap/${params.get("id")}/${params.get("capitulo")}`);
+        
+        let original = "";
+        if (params.get("capitulo")) {
+            original = `https://castmanu.ddns.net/descargar/${pelicula.type}/${pelicula.title}/${params.get("capitulo")}/original/original.${extension}`;
+            original += `?filename=${pelicula.title} - capitulo ${params.get("capitulo")}.${extension}`;
+        } else {
+            original = `https://castmanu.ddns.net/descargar/${pelicula.type}/${pelicula.title}/original/original.${extension}`;
+            original += `?filename=${pelicula.title}.${extension}`;
+        }
+
+        let descarga;
+        try{
+            // Añadir subtítulos
+            let subs = await apiGetServer(`https://castmanu.ddns.net/getSubLanguages/${pelicula.title}/${pelicula.type}${params.get("capitulo") ? `?capitulo=${params.get("capitulo")}` : ''}`);
+            if (subs.success) {
+                let capitulo = params.get("capitulo") ? `/${params.get("capitulo")}` : '';
+                subs.languages.forEach((sub, index) => {
+                    let track = document.createElement('track');
+                    track.kind = 'subtitles';
+                    track.label = sub;
+                    track.srclang = mapSubs(sub);
+                    track.src = `https://castmanu.ddns.net/videos/${pelicula.type}/${pelicula.title}${capitulo}/subs/subs_${index}.vtt`;
+                    video.appendChild(track);
+                });
+            }
+
+            descarga = document.createElement("button");
+            descarga.className = "w-48 bg-neon-cyan px-4 py-2 rounded-md text-midnight-blue font-bold hover:scale-105 transition text-center";
+            descarga.innerText = "Descarga el archivo";
+            descarga.addEventListener("click", async () => {
+                let a = document.createElement("a");
+                a.href = original;
+                a.download = "";
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            });
+            main.appendChild(descarga);
+        } catch {}
+
+        video.addEventListener('loadedmetadata', async () => {
+            let duracion = document.getElementById("duracion");
+            duracion.innerText = `Duración: ${Math.round((video.duration / 60))} minutos`;
+            video.parentNode.classList.remove("hidden");
+        });
+
         video.addEventListener('error', () => {
             if (descarga) descarga.remove();
             video.remove();
@@ -138,55 +189,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             errorDiv.appendChild(message);
             container.appendChild(errorDiv);
         });
-        
-        let extension = pelicula.extensionOriginal;
-        if (!extension)
-            extension = await apiGet(`http://localhost:8000/get-extension-cap/${params.get("id")}/${params.get("capitulo")}`);
-        
-        let original = "";
-        if (params.get("capitulo")) {
-            original = `https://castmanu.ddns.net/descargar/${pelicula.type}/${pelicula.title}/${params.get("capitulo")}/original/original.${extension}`;
-            original += `?filename=${pelicula.title} - capitulo ${params.get("capitulo")}.${extension}`;
-        } else {
-            original = `https://castmanu.ddns.net/descargar/${pelicula.type}/${pelicula.title}/original/original.${extension}`;
-            original += `?filename=${pelicula.title}.${extension}`;
-        }
-        
-        try{
-            // Añadir subtítulos
-            let subs = await apiGetServer(`https://castmanu.ddns.net/getSubLanguages/${pelicula.title}/${pelicula.type}${params.get("capitulo") ? `?capitulo=${params.get("capitulo")}` : ''}`);
-            if (subs.success) {
-                let capitulo = params.get("capitulo") ? `/${params.get("capitulo")}` : '';
-                subs.languages.forEach((sub, index) => {
-                    let track = document.createElement('track');
-                    track.kind = 'subtitles';
-                    track.label = sub;
-                    track.srclang = mapSubs(sub);
-                    track.src = `https://castmanu.ddns.net/videos/${pelicula.type}/${pelicula.title}${capitulo}/subs/subs_${index}.vtt`;
-                    video.appendChild(track);
-                });
-            }
-
-            let descarga = document.createElement("button");
-            descarga.className = "w-48 bg-neon-cyan px-4 py-2 rounded-md text-midnight-blue font-bold hover:scale-105 transition text-center";
-            descarga.innerText = "Descarga el archivo";
-            descarga.addEventListener("click", async () => {
-                let a = document.createElement("a");
-                a.href = original;
-                a.download = "";
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-            });
-            main.appendChild(descarga);
-        } catch {}
-
-        video.addEventListener('loadedmetadata', async () => {
-            let duracion = document.getElementById("duracion");
-            duracion.innerText = `Duración: ${Math.round((video.duration / 60))} minutos`;
-            video.parentNode.classList.remove("hidden");
-        });
-
     }
 
     async function initPlayer() {
@@ -224,6 +226,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         let extraCap = params.get("capitulo") ? `?capitulo=${params.get("capitulo")}` : '';
 
+        let descarga;
         try{
             let subs = await apiGetServer(`https://castmanu.ddns.net/getSubLanguages/${pelicula.title}/${pelicula.type}${extraCap}`);
             if (subs.success) {
@@ -241,7 +244,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 });
             }
 
-            let descarga = document.createElement("button");
+            descarga = document.createElement("button");
             descarga.className = "w-48 bg-neon-cyan px-4 py-2 rounded-md text-midnight-blue font-bold hover:scale-105 transition text-center";
             descarga.innerText = "Descarga el archivo";
             descarga.addEventListener("click", async () => {
@@ -401,6 +404,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             let playerElement = player.el();
             let container = playerElement.parentNode;
             playerElement.remove();
+            if (descarga) descarga.remove();
             container.classList.remove("aspect-[16/9]", "hidden");
     
             // Crear el div de error
