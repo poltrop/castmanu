@@ -100,10 +100,44 @@ document.addEventListener("DOMContentLoaded", async () => {
         video.setAttribute('playsinline', '');
         video.setAttribute('webkit-playsinline', '');
         video.setAttribute('preload', 'auto');
+        video.className = 'w-full h-full object-contain';
         video.poster = posterValue;
         video.src = videoSource;
         container.appendChild(video);
         main.appendChild(container);
+
+        video.addEventListener('error', () => {
+            if (descarga) descarga.remove();
+            video.remove();
+            container.classList.remove("aspect-[16/9]", "hidden");
+
+            let errorDiv = document.createElement('div');
+            errorDiv.classList.add(
+                'bg-gray-blue/20',
+                'border',
+                'border-neon-cyan/30',
+                'text-gray-blue',
+                'px-6',
+                'py-8',
+                'rounded-xl',
+                'text-center',
+                'shadow-md',
+                'md:w-2/4',
+                'w-full'
+            );
+
+            let title = document.createElement('p');
+            title.textContent = 'No se pudo cargar el video';
+            title.classList.add('text-lg', 'font-semibold', 'mb-2');
+
+            let message = document.createElement('p');
+            message.textContent = 'El video se está procesando. Inténtalo más tarde';
+            message.classList.add('text-sm');
+
+            errorDiv.appendChild(title);
+            errorDiv.appendChild(message);
+            container.appendChild(errorDiv);
+        });
         
         let extension = pelicula.extensionOriginal;
         if (!extension)
@@ -145,7 +179,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 a.remove();
             });
             main.appendChild(descarga);
-
         } catch {}
 
         video.addEventListener('loadedmetadata', async () => {
@@ -172,6 +205,55 @@ document.addEventListener("DOMContentLoaded", async () => {
         video.addEventListener('pause', stopAutoSave);
         video.addEventListener('ended', stopAutoSave);
         video.addEventListener('volumechange', updateVolume);
+
+        container.appendChild(video);
+        main.appendChild(container);
+
+        let extension = pelicula.extensionOriginal;
+        if (!extension)
+            extension = await apiGet(`http://localhost:8000/get-extension-cap/${params.get("id")}/${params.get("capitulo")}`);
+
+        let original = "";
+        if (params.get("capitulo")) {
+            original = `https://castmanu.ddns.net/descargar/${pelicula.type}/${pelicula.title}/${params.get("capitulo")}/original/original.${extension}`;
+            original += `?filename=${pelicula.title} - capitulo ${params.get("capitulo")}.${extension}`;
+        } else {
+            original = `https://castmanu.ddns.net/descargar/${pelicula.type}/${pelicula.title}/original/original.${extension}`;
+            original += `?filename=${pelicula.title}.${extension}`;
+        }
+
+        let extraCap = params.get("capitulo") ? `?capitulo=${params.get("capitulo")}` : '';
+
+        try{
+            let subs = await apiGetServer(`https://castmanu.ddns.net/getSubLanguages/${pelicula.title}/${pelicula.type}${extraCap}`);
+            if (subs.success) {
+                let track;
+                let capitulo = params.get("capitulo") ? `/${params.get("capitulo")}` : '';
+                subs.languages.forEach((sub, index) => {
+                    track = document.createElement('track');
+                    
+                    track.setAttribute('kind', 'subtitles');
+                    track.setAttribute('label', sub);
+                    track.setAttribute('src', `https://castmanu.ddns.net/videos/${pelicula.type}/${pelicula.title}${capitulo}/subs/subs_${index}.vtt`);
+                    track.setAttribute('srclang', mapSubs(sub));
+                    
+                    video.appendChild(track);
+                });
+            }
+
+            let descarga = document.createElement("button");
+            descarga.className = "w-48 bg-neon-cyan px-4 py-2 rounded-md text-midnight-blue font-bold hover:scale-105 transition text-center";
+            descarga.innerText = "Descarga el archivo";
+            descarga.addEventListener("click", async () => {
+                let a = document.createElement("a");
+                a.href = original;
+                a.download = "";
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            });
+            main.appendChild(descarga);
+        } catch {}
 
         // FUNCIONES PARA GUARDAR EL PROGRESO DEL VIDEO
         let intervalId;
@@ -224,57 +306,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 apiPut(`http://localhost:8000/update-volume`, data)
             }, 500);
         }
-
-        container.appendChild(video);
-        main.appendChild(container);
-
-        let extension = pelicula.extensionOriginal;
-        if (!extension)
-            extension = await apiGet(`http://localhost:8000/get-extension-cap/${params.get("id")}/${params.get("capitulo")}`);
-
-        let original = "";
-        if (params.get("capitulo")) {
-            original = `https://castmanu.ddns.net/descargar/${pelicula.type}/${pelicula.title}/${params.get("capitulo")}/original/original.${extension}`;
-            original += `?filename=${pelicula.title} - capitulo ${params.get("capitulo")}.${extension}`;
-        } else {
-            original = `https://castmanu.ddns.net/descargar/${pelicula.type}/${pelicula.title}/original/original.${extension}`;
-            original += `?filename=${pelicula.title}.${extension}`;
-        }
-
         
-        let extraCap = params.get("capitulo") ? `?capitulo=${params.get("capitulo")}` : '';
-        
-        try{
-            let subs = await apiGetServer(`https://castmanu.ddns.net/getSubLanguages/${pelicula.title}/${pelicula.type}${extraCap}`);
-            if (subs.success) {
-                let track;
-                let capitulo = params.get("capitulo") ? `/${params.get("capitulo")}` : '';
-                subs.languages.forEach((sub, index) => {
-                    track = document.createElement('track');
-                    
-                    track.setAttribute('kind', 'subtitles');
-                    track.setAttribute('label', sub);
-                    track.setAttribute('src', `https://castmanu.ddns.net/videos/${pelicula.type}/${pelicula.title}${capitulo}/subs/subs_${index}.vtt`);
-                    track.setAttribute('srclang', mapSubs(sub));
-                    
-                    video.appendChild(track);
-                });
-            }
-
-            let descarga = document.createElement("button");
-            descarga.className = "w-48 bg-neon-cyan px-4 py-2 rounded-md text-midnight-blue font-bold hover:scale-105 transition text-center";
-            descarga.innerText = "Descarga el archivo";
-            descarga.addEventListener("click", async () => {
-                let a = document.createElement("a");
-                a.href = original;
-                a.download = "";
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-            });
-            main.appendChild(descarga);
-        } catch {}
-
         let player = videojs('videoPlayer', {
             techOrder: ['chromecast', 'html5'],
             controls: true,
@@ -283,15 +315,15 @@ document.addEventListener("DOMContentLoaded", async () => {
                 chromecast: {}
             }
         });
-
-
+        
         let volumen = await apiGet(`http://localhost:8000/get-volume`);
         let settings = await apiGet(`http://localhost:8000/get-settings/${params.get("id")}${extraCap}`);
         if (!settings.success)
             settings = null;
         else
-            settings = settings.settings;
-
+        settings = settings.settings;
+    
+        player.poster(posterValue);
         // Establecer fuente HLS
         player.src({
             type: 'application/vnd.apple.mpegurl',
@@ -364,17 +396,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             container.classList.remove("hidden");
         });
 
-
-        player.poster(posterValue);
-
         // Manejar error de carga
         player.on('error', function () {
             let playerElement = player.el();
             let container = playerElement.parentNode;
             playerElement.remove();
             container.classList.remove("aspect-[16/9]", "hidden");
-
-
+    
             // Crear el div de error
             let errorDiv = document.createElement('div');
             errorDiv.classList.add(
@@ -387,18 +415,18 @@ document.addEventListener("DOMContentLoaded", async () => {
                 'rounded-xl',
                 'text-center',
                 'shadow-md',
-                'md:w-2/4',
+                'lg:w-2/4',
                 'w-full'
             );
-
+    
             let title = document.createElement('p');
             title.textContent = 'No se pudo cargar el video';
             title.classList.add('text-lg', 'font-semibold', 'mb-2');
-
+    
             let message = document.createElement('p');
             message.textContent = 'El video se está procesando. Inténtalo mas tarde';
             message.classList.add('text-sm');
-
+    
             errorDiv.appendChild(title);
             errorDiv.appendChild(message);
             container.appendChild(errorDiv);
