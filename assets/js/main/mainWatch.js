@@ -81,7 +81,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         } else return;
     }
 
-    let isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    let isSafari = /^((?!chrome|android|crios|fxios).)*safari/i.test(navigator.userAgent);
 
     if (isSafari) {
         initPlayerSafari();
