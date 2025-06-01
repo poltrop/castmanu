@@ -92,7 +92,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     async function initPlayerSafari() {
         let main = document.querySelector('main');
         let container = document.createElement('div');
-        container.className = 'w-full md:w-3/4 flex aspect-[16/9] justify-center';
+        container.className = 'w-full md:w-3/4 flex aspect-[16/9] justify-center hidden';
 
         let video = document.createElement('video');
         video.id = 'videoPlayer';
