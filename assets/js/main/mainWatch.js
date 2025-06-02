@@ -150,6 +150,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
             main.appendChild(descarga);
         } catch {
+            video.remove();
             container.classList.remove("aspect-[16/9]", "hidden");
 
             let errorDiv = document.createElement('div');
@@ -188,11 +189,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
 
         video.addEventListener('error', () => {
-            if (descarga) descarga.remove();
-            video.remove();
-            container.classList.remove("aspect-[16/9]", "hidden");
-
             if (!document.getElementById("errorMsg")) {
+                if (descarga) descarga.remove();
+                video.remove();
+                container.classList.remove("aspect-[16/9]", "hidden");
                 let errorDiv = document.createElement('div');
                 errorDiv.id = "errorMsg";
                 errorDiv.classList.add(
@@ -290,6 +290,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
             main.appendChild(descarga);
         } catch {
+            video.remove();
             container.classList.remove("aspect-[16/9]", "hidden");
     
             // Crear el div de error
@@ -465,12 +466,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         // Manejar error de carga
         player.on('error', function () {
-            let playerElement = player.el();
-            let container = playerElement.parentNode;
-            playerElement.remove();
-            if (descarga) descarga.remove();
-            container.classList.remove("aspect-[16/9]", "hidden");
             if (!document.getElementById("errorMsg")){
+                let playerElement = player.el();
+                let container = playerElement.parentNode;
+                playerElement.remove();
+                if (descarga) descarga.remove();
+                container.classList.remove("aspect-[16/9]", "hidden");
                 // Crear el div de error
                 let errorDiv = document.createElement('div');
                 errorDiv.id = "errorMsg";
