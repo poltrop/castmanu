@@ -146,7 +146,7 @@ def process_file(input_file):
                 if contador_subs == 0:
                     os.mkdir(os.path.join(final_folder, "subs"))
                     subs_folder = os.path.join(final_folder, "subs")
-                comando_subs += f' -map 0:s:{contador_subs} "{os.path.join(subs_folder, "subs_{contador_subs}.vtt")}"'
+                comando_subs += f' -map 0:s:{contador_subs} "{os.path.join(subs_folder, f"subs_{contador_subs}.vtt")}"'
                 lengua_subs.append(stream.get("title") or elegir_idioma(stream.get("language") or stream.get("tags").get("language"),contador_subs))
                 contador_subs += 1
 

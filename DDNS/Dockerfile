@@ -7,19 +7,22 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN ln -snf /usr/share/zoneinfo/Europe/Madrid /etc/localtime && echo "Europe/Madrid" > /etc/timezone
 
 # Instalar dependencias necesarias
-RUN apt-get update && \
+RUN apt-get update && apt-get install -y apt-transport-https ca-certificates curl && \
+    sed -i 's|http://archive.ubuntu.com|http://mirror.kku.ac.th/ubuntu|g' /etc/apt/sources.list && \
+    sed -i 's|http://security.ubuntu.com|http://mirror.kku.ac.th/ubuntu|g' /etc/apt/sources.list && \
+    apt-get update && \
     apt-get install -y \
-    python3 \
-    python3-pip \
-    ffmpeg \
-    nginx \
-    curl \
-    nvidia-container-toolkit \
-    nvidia-utils-560 \
-    nvidia-driver-560 \
-    certbot \
-    python3-certbot-nginx\
-    && \
+        python3 \
+        python3-pip \
+        ffmpeg \
+        nginx \
+        curl \
+        nvidia-container-toolkit \
+        nvidia-utils-560 \
+        nvidia-driver-560 \
+        certbot \
+        python3-certbot-nginx\
+        && \
     pip install watchdog && \
     pip install flask && \
     pip install pillow && \

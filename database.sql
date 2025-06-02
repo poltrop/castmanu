@@ -57,6 +57,7 @@ CREATE TABLE user_video_settings (
 
 INSERT INTO users (username, password, admin) VALUES
 ('admin', 'scrypt:32768:8:1$7BLKdBrCTHhGWJ3W$b8c49eaad43f48805d8d407e5dfa41ec4bc14db80272e3d5cdfe21ac481b8a9b70bad1480b2aedf42210b9abb898adfdb0ba9b4797b2ffd232c033d1b679ad5d', '1'), -- pass: testadmin
+('admin2', 'scrypt:32768:8:1$7BLKdBrCTHhGWJ3W$b8c49eaad43f48805d8d407e5dfa41ec4bc14db80272e3d5cdfe21ac481b8a9b70bad1480b2aedf42210b9abb898adfdb0ba9b4797b2ffd232c033d1b679ad5d', '1'),
 ('test1', 'scrypt:32768:8:1$nbgRvwzsbWWE9gDd$1aa392f4458317f0da7a7493902a9880062becb3e1da7eb4dfa359e728ec6c79b0c58c372c76a648eb27b2e4ef745b0af157cfc19f4d46ce7468a5680ef12713', '0'), -- pass: test
 ('test2', 'scrypt:32768:8:1$nbgRvwzsbWWE9gDd$1aa392f4458317f0da7a7493902a9880062becb3e1da7eb4dfa359e728ec6c79b0c58c372c76a648eb27b2e4ef745b0af157cfc19f4d46ce7468a5680ef12713', '0'),
 ('test3', 'scrypt:32768:8:1$nbgRvwzsbWWE9gDd$1aa392f4458317f0da7a7493902a9880062becb3e1da7eb4dfa359e728ec6c79b0c58c372c76a648eb27b2e4ef745b0af157cfc19f4d46ce7468a5680ef12713', '0'),
