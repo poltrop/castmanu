@@ -149,20 +149,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 a.remove();
             });
             main.appendChild(descarga);
-        } catch {}
-
-        video.addEventListener('loadedmetadata', async () => {
-            let duracion = document.getElementById("duracion");
-            duracion.innerText = `Duración: ${Math.round((video.duration / 60))} minutos`;
-            video.parentNode.classList.remove("hidden");
-        });
-
-        video.addEventListener('error', () => {
-            if (descarga) descarga.remove();
-            video.remove();
+        } catch {
             container.classList.remove("aspect-[16/9]", "hidden");
 
             let errorDiv = document.createElement('div');
+            errorDiv.id = "errorMsg";
             errorDiv.classList.add(
                 'bg-gray-blue/20',
                 'border',
@@ -188,6 +179,48 @@ document.addEventListener("DOMContentLoaded", async () => {
             errorDiv.appendChild(title);
             errorDiv.appendChild(message);
             container.appendChild(errorDiv);
+        }
+
+        video.addEventListener('loadedmetadata', async () => {
+            let duracion = document.getElementById("duracion");
+            duracion.innerText = `Duración: ${Math.round((video.duration / 60))} minutos`;
+            video.parentNode.classList.remove("hidden");
+        });
+
+        video.addEventListener('error', () => {
+            if (descarga) descarga.remove();
+            video.remove();
+            container.classList.remove("aspect-[16/9]", "hidden");
+
+            if (!document.getElementById("errorMsg")) {
+                let errorDiv = document.createElement('div');
+                errorDiv.id = "errorMsg";
+                errorDiv.classList.add(
+                    'bg-gray-blue/20',
+                    'border',
+                    'border-neon-cyan/30',
+                    'text-gray-blue',
+                    'px-6',
+                    'py-8',
+                    'rounded-xl',
+                    'text-center',
+                    'shadow-md',
+                    'md:w-2/4',
+                    'w-full'
+                );
+    
+                let title = document.createElement('p');
+                title.textContent = 'No se pudo cargar el video';
+                title.classList.add('text-lg', 'font-semibold', 'mb-2');
+    
+                let message = document.createElement('p');
+                message.textContent = 'El video se está procesando. Inténtalo más tarde';
+                message.classList.add('text-sm');
+    
+                errorDiv.appendChild(title);
+                errorDiv.appendChild(message);
+                container.appendChild(errorDiv);
+            }
         });
     }
 
@@ -256,7 +289,38 @@ document.addEventListener("DOMContentLoaded", async () => {
                 a.remove();
             });
             main.appendChild(descarga);
-        } catch {}
+        } catch {
+            container.classList.remove("aspect-[16/9]", "hidden");
+    
+            // Crear el div de error
+            let errorDiv = document.createElement('div');
+            errorDiv.id = "errorMsg";
+            errorDiv.classList.add(
+                'bg-gray-blue/20',
+                'border',
+                'border-neon-cyan/30',
+                'text-gray-blue',
+                'px-6',
+                'py-8',
+                'rounded-xl',
+                'text-center',
+                'shadow-md',
+                'lg:w-2/4',
+                'w-full'
+            );
+    
+            let title = document.createElement('p');
+            title.textContent = 'No se pudo cargar el video';
+            title.classList.add('text-lg', 'font-semibold', 'mb-2');
+    
+            let message = document.createElement('p');
+            message.textContent = 'El video se está procesando. Inténtalo mas tarde';
+            message.classList.add('text-sm');
+    
+            errorDiv.appendChild(title);
+            errorDiv.appendChild(message);
+            container.appendChild(errorDiv);
+        }
 
         // FUNCIONES PARA GUARDAR EL PROGRESO DEL VIDEO
         let intervalId;
@@ -406,34 +470,36 @@ document.addEventListener("DOMContentLoaded", async () => {
             playerElement.remove();
             if (descarga) descarga.remove();
             container.classList.remove("aspect-[16/9]", "hidden");
-    
-            // Crear el div de error
-            let errorDiv = document.createElement('div');
-            errorDiv.classList.add(
-                'bg-gray-blue/20',
-                'border',
-                'border-neon-cyan/30',
-                'text-gray-blue',
-                'px-6',
-                'py-8',
-                'rounded-xl',
-                'text-center',
-                'shadow-md',
-                'lg:w-2/4',
-                'w-full'
-            );
-    
-            let title = document.createElement('p');
-            title.textContent = 'No se pudo cargar el video';
-            title.classList.add('text-lg', 'font-semibold', 'mb-2');
-    
-            let message = document.createElement('p');
-            message.textContent = 'El video se está procesando. Inténtalo mas tarde';
-            message.classList.add('text-sm');
-    
-            errorDiv.appendChild(title);
-            errorDiv.appendChild(message);
-            container.appendChild(errorDiv);
+            if (!document.getElementById("errorMsg")){
+                // Crear el div de error
+                let errorDiv = document.createElement('div');
+                errorDiv.id = "errorMsg";
+                errorDiv.classList.add(
+                    'bg-gray-blue/20',
+                    'border',
+                    'border-neon-cyan/30',
+                    'text-gray-blue',
+                    'px-6',
+                    'py-8',
+                    'rounded-xl',
+                    'text-center',
+                    'shadow-md',
+                    'lg:w-2/4',
+                    'w-full'
+                );
+        
+                let title = document.createElement('p');
+                title.textContent = 'No se pudo cargar el video';
+                title.classList.add('text-lg', 'font-semibold', 'mb-2');
+        
+                let message = document.createElement('p');
+                message.textContent = 'El video se está procesando. Inténtalo mas tarde';
+                message.classList.add('text-sm');
+        
+                errorDiv.appendChild(title);
+                errorDiv.appendChild(message);
+                container.appendChild(errorDiv);
+            }
         });
     }
 
